@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Recorrido de prueba para HU11 (Xcode > barra de depuración > ubicación).
+     Tec → Centro → San Nicolás → Guadalupe → San Pedro → Tec, un punto cada 8 segundos.
+     Pasa por las zonas de varias delegaciones del directorio de ejemplo de Monterrey. -->
+<gpx version="1.1" creator="El Rebaño" xmlns="http://www.topografix.com/GPX/1/1">
+  <wpt lat="25.65140" lon="-100.28950"><name>Tec de Monterrey</name><time>2026-10-20T12:00:00Z</time></wpt>
+  <wpt lat="25.65540" lon="-100.29340"><time>2026-10-20T12:00:08Z</time></wpt>
+  <wpt lat="25.65940" lon="-100.29730"><time>2026-10-20T12:00:16Z</time></wpt>
+  <wpt lat="25.66340" lon="-100.30120"><time>2026-10-20T12:00:24Z</time></wpt>
+  <wpt lat="25.66740" lon="-100.30510"><time>2026-10-20T12:00:32Z</time></wpt>
+  <wpt lat="25.67140" lon="-100.30900"><name>Macroplaza · Monterrey Centro</name><time>2026-10-20T12:00:40Z</time></wpt>
+  <wpt lat="25.67812" lon="-100.30840"><time>2026-10-20T12:00:48Z</time></wpt>
+  <wpt lat="25.68484" lon="-100.30780"><time>2026-10-20T12:00:56Z</time></wpt>
+  <wpt lat="25.69156" lon="-100.30720"><time>2026-10-20T12:01:04Z</time></wpt>
+  <wpt lat="25.69828" lon="-100.30660"><time>2026-10-20T12:01:12Z</time></wpt>
+  <wpt lat="25.70500" lon="-100.30600"><name>Av. Universidad</name><time>2026-10-20T12:01:20Z</time></wpt>
+  <wpt lat="25.71234" lon="-100.30520"><time>2026-10-20T12:01:28Z</time></wpt>
+  <wpt lat="25.71968" lon="-100.30440"><time>2026-10-20T12:01:36Z</time></wpt>
+  <wpt lat="25.72702" lon="-100.30360"><time>2026-10-20T12:01:44Z</time></wpt>
+  <wpt lat="25.73436" lon="-100.30280"><time>2026-10-20T12:01:52Z</time></wpt>
+  <wpt lat="25.74170" lon="-100.30200"><name>San Nicolás</name><time>2026-10-20T12:02:00Z</time></wpt>
+  <wpt lat="25.73536" lon="-100.29560"><time>2026-10-20T12:02:08Z</time></wpt>
+  <wpt lat="25.72902" lon="-100.28920"><time>2026-10-20T12:02:16Z</time></wpt>
+  <wpt lat="25.72268" lon="-100.28280"><time>2026-10-20T12:02:24Z</time></wpt>
+  <wpt lat="25.71634" lon="-100.27640"><time>2026-10-20T12:02:32Z</time></wpt>
+  <wpt lat="25.71000" lon="-100.27000"><name>Av. Miguel Alemán</name><time>2026-10-20T12:02:40Z</time></wpt>
+  <wpt lat="25.70334" lon="-100.26730"><time>2026-10-20T12:02:48Z</time></wpt>
+  <wpt lat="25.69668" lon="-100.26460"><time>2026-10-20T12:02:56Z</time></wpt>
+  <wpt lat="25.69002" lon="-100.26190"><time>2026-10-20T12:03:04Z</time></wpt>
+  <wpt lat="25.68336" lon="-100.25920"><time>2026-10-20T12:03:12Z</time></wpt>
+  <wpt lat="25.67670" lon="-100.25650"><name>Guadalupe</name><time>2026-10-20T12:03:20Z</time></wpt>
+  <wpt lat="25.67336" lon="-100.27520"><time>2026-10-20T12:03:28Z</time></wpt>
+  <wpt lat="25.67002" lon="-100.29390"><time>2026-10-20T12:03:36Z</time></wpt>
+  <wpt lat="25.66668" lon="-100.31260"><time>2026-10-20T12:03:44Z</time></wpt>
+  <wpt lat="25.66334" lon="-100.33130"><time>2026-10-20T12:03:52Z</time></wpt>
+  <wpt lat="25.66000" lon="-100.35000"><name>Av. Constitución</name><time>2026-10-20T12:04:00Z</time></wpt>
+  <wpt lat="25.65946" lon="-100.36046"><time>2026-10-20T12:04:08Z</time></wpt>
+  <wpt lat="25.65892" lon="-100.37092"><time>2026-10-20T12:04:16Z</time></wpt>
+  <wpt lat="25.65838" lon="-100.38138"><time>2026-10-20T12:04:24Z</time></wpt>
+  <wpt lat="25.65784" lon="-100.39184"><time>2026-10-20T12:04:32Z</time></wpt>
+  <wpt lat="25.65730" lon="-100.40230"><name>San Pedro</name><time>2026-10-20T12:04:40Z</time></wpt>
+  <wpt lat="25.65484" lon="-100.38784"><time>2026-10-20T12:04:48Z</time></wpt>
+  <wpt lat="25.65238" lon="-100.37338"><time>2026-10-20T12:04:56Z</time></wpt>
+  <wpt lat="25.64992" lon="-100.35892"><time>2026-10-20T12:05:04Z</time></wpt>
+  <wpt lat="25.64746" lon="-100.34446"><time>2026-10-20T12:05:12Z</time></wpt>
+  <wpt lat="25.64500" lon="-100.33000"><name>Av. Gonzalitos sur</name><time>2026-10-20T12:05:20Z</time></wpt>
+  <wpt lat="25.64628" lon="-100.32190"><time>2026-10-20T12:05:28Z</time></wpt>
+  <wpt lat="25.64756" lon="-100.31380"><time>2026-10-20T12:05:36Z</time></wpt>
+  <wpt lat="25.64884" lon="-100.30570"><time>2026-10-20T12:05:44Z</time></wpt>
+  <wpt lat="25.65012" lon="-100.29760"><time>2026-10-20T12:05:52Z</time></wpt>
+  <wpt lat="25.65140" lon="-100.28950"><name>Tec de Monterrey</name><time>2026-10-20T12:06:00Z</time></wpt>
+</gpx>

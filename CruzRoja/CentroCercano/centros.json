@@ -1,0 +1,77 @@
+{
+  "nota": "DATOS DE PRUEBA. Nombres, coordenadas, teléfonos y referencias inventados. Cambiar por el directorio oficial de Cruz Roja antes de probar con usuarios. No marcar estos números.",
+  "centros": [
+    {
+      "id": "monterrey-centro",
+      "nombre": "Cruz Roja Monterrey Centro",
+      "telefono": "8112345600",
+      "direccion": "Centro de Monterrey, N.L.",
+      "latitud": 25.6714,
+      "longitud": -100.309,
+      "referencia": "Sobre Av. Constitución, a dos cuadras de la Macroplaza"
+    },
+    {
+      "id": "monterrey-sur",
+      "nombre": "Cruz Roja Monterrey Sur",
+      "telefono": "8112345601",
+      "direccion": "Zona Tec / Contry, N.L.",
+      "latitud": 25.637,
+      "longitud": -100.285,
+      "referencia": "Sobre Av. Eugenio Garza Sada, pasando el Tec"
+    },
+    {
+      "id": "san-nicolas",
+      "nombre": "Cruz Roja San Nicolás",
+      "telefono": "8112345602",
+      "direccion": "San Nicolás de los Garza, N.L.",
+      "latitud": 25.7417,
+      "longitud": -100.302,
+      "referencia": "Sobre Av. Universidad, cerca de Av. Juárez"
+    },
+    {
+      "id": "guadalupe",
+      "nombre": "Cruz Roja Guadalupe",
+      "telefono": "8112345603",
+      "direccion": "Guadalupe, N.L.",
+      "latitud": 25.6767,
+      "longitud": -100.2565,
+      "referencia": "Sobre Av. Benito Juárez, frente a la plaza principal"
+    },
+    {
+      "id": "san-pedro",
+      "nombre": "Cruz Roja San Pedro",
+      "telefono": "8112345604",
+      "direccion": "San Pedro Garza García, N.L.",
+      "latitud": 25.6573,
+      "longitud": -100.4023,
+      "referencia": "Sobre Av. Vasconcelos, cerca de Calzada San Pedro"
+    },
+    {
+      "id": "santa-catarina",
+      "nombre": "Cruz Roja Santa Catarina",
+      "telefono": "8112345605",
+      "direccion": "Santa Catarina, N.L.",
+      "latitud": 25.6733,
+      "longitud": -100.458,
+      "referencia": "Sobre Av. Manuel Ordóñez, cerca del centro"
+    },
+    {
+      "id": "apodaca",
+      "nombre": "Cruz Roja Apodaca",
+      "telefono": "8112345606",
+      "direccion": "Apodaca, N.L.",
+      "latitud": 25.7817,
+      "longitud": -100.188,
+      "referencia": "Sobre Av. Miguel Alemán, a la altura del centro de Apodaca"
+    },
+    {
+      "id": "escobedo",
+      "nombre": "Cruz Roja Escobedo",
+      "telefono": "8112345607",
+      "direccion": "General Escobedo, N.L.",
+      "latitud": 25.799,
+      "longitud": -100.324,
+      "referencia": "Sobre Av. Raúl Salinas, cerca de la presidencia municipal"
+    }
+  ]
+}

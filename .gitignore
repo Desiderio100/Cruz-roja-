@@ -1,0 +1,25 @@
+# macOS
+.DS_Store
+
+# Xcode
+xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+*.xccheckout
+DerivedData/
+build/
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# VS Code (solo compartimos las extensiones recomendadas)
+.vscode/*
+!.vscode/extensions.json
+
+# Llaves y secretos: NUNCA se suben al repo
+*.env
+Secrets.xcconfig
+
+# Respaldo local de la versión anterior (no se sube)
+_respaldo_version_compleja/
