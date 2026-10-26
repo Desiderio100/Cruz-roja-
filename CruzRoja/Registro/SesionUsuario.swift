@@ -4,6 +4,7 @@
 //
 // El nombre y el teléfono se guardan en Perfil (Comun/Dispositivo.swift, en el Llavero),
 // así Emergencia, Citas y Capacitación usan los mismos datos.
+//Tonchez
 
 import Foundation
 import Observation
