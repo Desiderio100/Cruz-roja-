@@ -1,6 +1,7 @@
+// Responsable del módulo de emergencia: Ayhan Ben Halima Martinez · A01647593
 //
 //  EmergenciaInicio.swift
-//  Botón de EMERGENCIA de la pantalla principal + lo que abre (a2):
+//  Botón de EMERGENCIA de la pantalla principal + lo que abre (Ayhan):
 //    • con servidor: la llamada (EmergencyCallView), con la delegación más cercana que elige el backend;
 //    • sin internet o si el servidor falla: el respaldo (RespaldoSinInternetView), con el centro más
 //      cercano de centros.json y tus coordenadas, para llamar por línea telefónica.

@@ -74,7 +74,7 @@ CruzRoja/
 ├── Capacitacion/               ← Capacitación: cursos + "Aprende" (Desiderio)
 ├── Citas/                      ← Agenda de citas, Mis citas, Cancelar (Luis)
 ├── Ventas/                     ← Productos con causa (Sebastián)
-└── Emergencia/                 ← Botón de emergencia, llamada y respaldo sin internet (a2)
+└── Emergencia/                 ← Botón de emergencia, llamada y respaldo sin internet (Ayhan)
 backend/
 ├── src/server.js               ← crea el servidor y monta las rutas de cada pantalla
 ├── src/db.js                   ← UN pool de MySQL + llamar() para procedimientos (CALL ...)
@@ -93,7 +93,7 @@ backend/
 | Capacitación (HU14) | Desiderio | `Capacitacion/` | No usa (cursos de ejemplo) |
 | Agenda de citas | Luis | `Citas/` | `rutas/citas.js`, `rutas/dispositivos.js` |
 | Productos con causa | Sebastián | `Ventas/` | `rutas/productos.js` |
-| Emergencia y llamada | a2 | `Emergencia/` | `rutas/llamadas.js` |
+| Emergencia y llamada | Ayhan Ben Halima Martinez · A01647593 | `Emergencia/` | `rutas/llamadas.js` |
 
 ## Agregar tu función
 

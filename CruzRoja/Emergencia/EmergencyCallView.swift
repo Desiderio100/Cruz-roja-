@@ -1,3 +1,4 @@
+// Responsable del módulo de emergencia: Ayhan Ben Halima Martinez · A01647593
 import SwiftUI
 
 struct EmergencyCallView: View {

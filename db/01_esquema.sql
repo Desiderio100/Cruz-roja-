@@ -187,6 +187,7 @@ DELIMITER ;
 
 -- ---------------------------------------------------------------------
 -- Llamadas y fichas de emergencia (RF05 a RF16)
+-- Responsable de este módulo: Ayhan Ben Halima Martinez · A01647593
 -- ---------------------------------------------------------------------
 CREATE TABLE llamada (
     id                   CHAR(36)     NOT NULL DEFAULT (LOWER(CONCAT_WS('-', HEX(RANDOM_BYTES(4)), HEX(RANDOM_BYTES(2)), CONCAT('4', SUBSTR(HEX(RANDOM_BYTES(2)), 2)), CONCAT(SUBSTR('89ab', 1 + (ORD(RANDOM_BYTES(1)) & 3), 1), SUBSTR(HEX(RANDOM_BYTES(2)), 2)), HEX(RANDOM_BYTES(6))))),

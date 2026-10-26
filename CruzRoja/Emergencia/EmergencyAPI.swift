@@ -1,10 +1,11 @@
+// Responsable del módulo de emergencia: Ayhan Ben Halima Martinez · A01647593
 //
 //  EmergencyAPI.swift
 //  Llamadas de emergencia contra el backend:
 //      POST  {apiBaseURL}/api/llamadas        crea la llamada y devuelve la delegación más cercana
 //      PATCH {apiBaseURL}/api/llamadas/{id}   estado (finalizada…) y autorización de video
 //
-//  Cambios respecto a la versión original de a2:
+//  Cambios respecto a la versión original de Ayhan:
 //   • La ubicación ya no se pide aquí: la entrega la app (Comun/Ubicacion.swift, una sola
 //     para todo el equipo) y llega como parámetro.
 //   • El id del dispositivo es el MISMO que usa Citas (Comun/Dispositivo.swift, guardado en

@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { ErrorHttp } from '../errores.js';
 
 /**
- * Botón de EMERGENCIA y llamada.   Dueño: a2 (autor del commit original)
+ * Botón de EMERGENCIA y llamada.   Responsable: Ayhan Ben Halima Martinez · A01647593
  *   POST  /api/llamadas        crea la llamada, elige la delegación activa más cercana y crea su ficha
  *   PATCH /api/llamadas/:id    actualiza el estado o la autorización de video (solo el dispositivo dueño)
  *

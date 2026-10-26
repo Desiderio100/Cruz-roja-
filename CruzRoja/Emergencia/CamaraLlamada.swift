@@ -1,3 +1,4 @@
+// Responsable del módulo de emergencia: Ayhan Ben Halima Martinez · A01647593
 //
 //  CamaraLlamada.swift
 //  Cámara REAL de la llamada de emergencia: se enciende solo si el operador la pide y la
