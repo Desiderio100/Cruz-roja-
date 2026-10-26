@@ -1,6 +1,7 @@
 // HU01 · "Verifica tu número": la persona escribe el código de 6 dígitos que le llegó por SMS.
 // Si es correcto, el servidor guarda el teléfono verificado en su dispositivo y la app
 // pasa a Permisos.
+//Tonchez
 
 import SwiftUI
 
