@@ -34,8 +34,7 @@ struct CentroCercanoView: View {
                 .padding()
             }
         }
-        .navigationTitle("Centro más cercano")
-        .navigationBarTitleDisplayMode(.inline)
+        .pantalla("Centro más cercano", grande: false, logo: false)
         .onChange(of: cercano) { _, nuevo in
             guard let nuevo else { return }
             ultimoCentroId = nuevo.id

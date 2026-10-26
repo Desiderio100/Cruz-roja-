@@ -28,8 +28,7 @@ struct RutasSinInternetView: View {
                         .foregroundStyle(.secondary)
                 }
             }
-            .navigationTitle("Rutas sin internet")
-            .navigationBarTitleDisplayMode(.inline)
+            .pantalla("Rutas sin internet", grande: false)
             .toolbar { Button("Listo") { cerrar() } }
         }
         .tint(Color.rojoCruzRoja)

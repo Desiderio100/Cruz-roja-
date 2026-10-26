@@ -1,0 +1,13 @@
+-- =====================================================================
+-- 99_borrar_todo_SOLO_DESARROLLO.sql  (MySQL 8.0 o superior)
+-- PELIGRO: borra la base de datos cruzroja completa, con todos sus datos.
+-- Úsalo solo en desarrollo, para volver a empezar desde cero. En producción NO.
+--
+-- Después de correrlo, vuelve a correr 01_esquema.sql, 02_datos_prueba.sql y
+-- 03_permisos_app.sql en ese orden.
+--
+-- No borra al usuario cruzroja_app (así conservas su contraseña). MySQL no quita los
+-- permisos de una base borrada: se quedan anotados, pero 03_permisos_app.sql empieza
+-- quitando todo y los vuelve a dar bien.
+-- =====================================================================
+DROP DATABASE IF EXISTS cruzroja;

@@ -23,3 +23,18 @@ Secrets.xcconfig
 
 # Respaldo local de la versión anterior (no se sube)
 _respaldo_version_compleja/
+
+# ── Backend (Node) y base de datos ─────────────────────────────────────────────
+# (.env termina en ".env", ya lo cubre la regla "*.env" de arriba; estas reglas cubren el resto)
+.env.*
+!.env.example
+*.pem
+node_modules/
+*.log
+# Respaldos de la base (traen datos)
+*dump*.sql
+
+# Python (servidor viejo de HU01) y basura de zips de Mac
+.venv/
+__pycache__/
+__MACOSX/

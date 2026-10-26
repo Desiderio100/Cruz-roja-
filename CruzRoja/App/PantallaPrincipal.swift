@@ -1,56 +1,51 @@
-// Las tarjetas salen de Secciones.swift: para agregar una pantalla nueva
+// Pantalla principal (maqueta "Pantalla principal"):
+//   ¿En qué podemos ayudarte? · Emergencia · Donar · Accesos rápidos.
+// Las filas de Accesos rápidos salen de Secciones.swift: para agregar una pantalla nueva
 // NO hace falta editar este archivo.
 
 import SwiftUI
 
 struct PantallaPrincipal: View {
+    @State private var viendoPerfil = false
+    @State private var enfoqueEmergencia = EnfoqueEmergencia()
+
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 12) {
-                    LogoCruzRoja()
-                        .padding(.top, 16)
-
-                    Text("¿En qué\npodemos ayudarte?")
+                VStack(alignment: .leading, spacing: 24) {
+                    Text("¿En qué podemos ayudarte?")
                         .font(.largeTitle.bold())
                         .padding(.top, 8)
-                        .padding(.bottom, 8)
 
-                    MaquetaInicio()
-                        .padding(.bottom, 16)
+                    BotonesInicio()
 
-                    Text("Información")
-                        .font(.title3.bold())
-                        .foregroundStyle(.secondary)
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("Accesos rápidos")
+                            .font(.headline)
 
-                    ForEach(Secciones.todas) { seccion in
-                        NavigationLink {
-                            seccion.pantalla()
-                        } label: {
-                            AccesoRapido(seccion: seccion)
+                        ForEach(Secciones.todas) { seccion in
+                            NavigationLink {
+                                seccion.pantalla()
+                            } label: {
+                                AccesoRapido(seccion: seccion)
+                            }
+                            .buttonStyle(.plain)
                         }
-                        .buttonStyle(.plain)
                     }
                 }
-                .padding(.horizontal, 24)
+                .padding(.horizontal, Medida.margen)
+                .padding(.bottom, 32)
             }
-            .toolbar(.hidden, for: .navigationBar)
+            .logoArriba()
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Button("Mi perfil", systemImage: "person.crop.circle") { viendoPerfil = true }
+                        .labelStyle(.iconOnly)
+                }
+            }
+            .sheet(isPresented: $viendoPerfil) { PerfilView() }
         }
-        .tint(Color.rojoCruzRoja)
-    }
-}
-
-/// Logo oficial. Para que aparezca: arrastra el PNG/PDF oficial de Cruz Roja
-/// Mexicana a Assets › LogoCruzRoja. Mientras no exista, no se muestra nada.
-private struct LogoCruzRoja: View {
-    var body: some View {
-        if UIImage(named: "LogoCruzRoja") != nil {
-            Image("LogoCruzRoja")
-                .resizable()
-                .scaledToFit()
-                .frame(height: 44)
-                .accessibilityLabel("Cruz Roja Mexicana")
-        }
+        .borrosaSalvoEmergencia(enfoqueEmergencia)
     }
 }
 
@@ -58,25 +53,31 @@ private struct AccesoRapido: View {
     let seccion: Seccion
 
     var body: some View {
-        HStack {
+        HStack(spacing: 14) {
+            Image(systemName: seccion.icono)
+                .font(.body.weight(.semibold))
+                .foregroundStyle(Color.rojoCruzRoja)
+                .frame(width: 26)
             Text(seccion.titulo)
-                .font(.title3.bold())
+                .font(.headline)
+                .foregroundStyle(.primary)
             Spacer()
             Image(systemName: "chevron.right")
                 .font(.subheadline.bold())
                 .foregroundStyle(.tertiary)
         }
-        .padding(.horizontal, 24)
-        .padding(.vertical, 22)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.fondoTarjeta, in: RoundedRectangle(cornerRadius: 16))
-        .contentShape(RoundedRectangle(cornerRadius: 16))
+        .padding(.horizontal, 16)
+        .frame(minHeight: 60)
+        .background(Color.fondoTarjeta, in: RoundedRectangle(cornerRadius: Medida.radio, style: .continuous))
+        .contentShape(Rectangle())
         .accessibilityHint(seccion.detalle)
     }
 }
 
 #Preview {
     PantallaPrincipal()
+        .environment(SesionUsuario())
+        .environment(GestorPermisos())
         .environment(Ubicacion())
         .environment(CapacitacionModelo())
         .environment(Internet())

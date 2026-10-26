@@ -19,6 +19,20 @@ enum Secciones {
             CapacitacionView()
         },
 
+        Seccion("Agenda de citas",
+                detalle: "Nutrición y psicología: agenda, mis citas y cancelar",
+                icono: "calendar",
+                responsable: "Luis") {
+            AgendaView()
+        },
+
+        Seccion("Productos con causa",
+                detalle: "Compra productos y apoya a Cruz Roja",
+                icono: "bag.fill",
+                responsable: "Sebastián") {
+            ProductosCausaView()
+        },
+
         // ⬇︎ Copia este bloque, quita las // y cambia los datos:
         //
         // Seccion("Mi función",

@@ -10,15 +10,15 @@ struct CapacitacionView: View {
                 ForEach(Parte.allCases, id: \.self) { Text($0.rawValue) }
             }
             .pickerStyle(.segmented)
-            .padding()
+            .padding(.horizontal, Medida.margen)
+            .padding(.vertical, 8)
 
             switch parte {
             case .cursos: ListaCursosView()
             case .aprende: AprendeView()
             }
         }
-        .navigationTitle("Capacitación")
-        .navigationBarTitleDisplayMode(.inline)
+        .pantalla("Capacitación")
     }
 }
 
@@ -85,8 +85,9 @@ struct DetalleCursoView: View {
     @Environment(Internet.self) private var internet
     let cursoId: String
 
-    @State private var nombre = ""
-    @State private var celular = ""
+    // Si la persona se registró, ya vienen llenos (Perfil, Comun/Dispositivo.swift).
+    @State private var nombre = Perfil.nombre
+    @State private var celular = Perfil.telefono
     @State private var folioNuevo: String?
     @State private var error: String?
 
@@ -137,8 +138,7 @@ struct DetalleCursoView: View {
                     }
                 }
             }
-            .navigationTitle(curso.titulo)
-            .navigationBarTitleDisplayMode(.inline)
+            .pantalla(curso.titulo, grande: false)
             .alert("¡Inscripción confirmada!", isPresented: Binding(get: { folioNuevo != nil }, set: { if !$0 { folioNuevo = nil } })) {
                 Button("Listo") {}
             } message: {

@@ -9,6 +9,7 @@
 /* Begin PBXFileReference section */
 		C2A0E1000000000000000007 /* CruzRoja.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CruzRoja.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C2A0E1000000000000000008 /* RecorridoMonterrey.gpx */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = RecorridoMonterrey.gpx; sourceTree = "<group>"; };
+		C2A0E1000000000000000019 /* CruzRoja-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "CruzRoja-Info.plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -34,6 +35,7 @@
 			isa = PBXGroup;
 			children = (
 				C2A0E1000000000000000009 /* CruzRoja */,
+				C2A0E1000000000000000019 /* CruzRoja-Info.plist */,
 				C2A0E100000000000000000C /* Simulacion */,
 				C2A0E100000000000000000D /* Products */,
 			);
@@ -86,7 +88,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1600;
-				LastUpgradeCheck = 2700;
+				LastUpgradeCheck = 2710;
 				TargetAttributes = {
 					C2A0E100000000000000000E = {
 						CreatedOnToolsVersion = 16.0;
@@ -169,6 +171,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = GR3BJD7CT8;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -234,6 +237,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = GR3BJD7CT8;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -265,8 +269,12 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "CruzRoja-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Cruz Roja";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Usamos tu ubicación para mostrarte el centro de Cruz Roja más cercano y su número de teléfono.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "La cámara permite enviar video al operador solo si él lo pide y tú aceptas.";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "En desarrollo, la app se conecta al servidor de Cruz Roja que corre en tu red local.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Usamos tu ubicación para mostrarte el centro de Cruz Roja más cercano y, si pides ayuda, avisar a la delegación más cercana dónde estás.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "El micrófono permite que hables con el operador durante una llamada de emergencia.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -293,8 +301,12 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "CruzRoja-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Cruz Roja";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Usamos tu ubicación para mostrarte el centro de Cruz Roja más cercano y su número de teléfono.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "La cámara permite enviar video al operador solo si él lo pide y tú aceptas.";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "En desarrollo, la app se conecta al servidor de Cruz Roja que corre en tu red local.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Usamos tu ubicación para mostrarte el centro de Cruz Roja más cercano y, si pides ayuda, avisar a la delegación más cercana dónde estás.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "El micrófono permite que hables con el operador durante una llamada de emergencia.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

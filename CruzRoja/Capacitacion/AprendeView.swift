@@ -9,8 +9,6 @@ struct AprendeView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                Text("Aprende")
-                    .font(.largeTitle.bold())
                 Text("Esto no sustituye un curso. En una emergencia, llama al 911.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
@@ -31,7 +29,8 @@ struct AprendeView: View {
                 .buttonStyle(BotonRojo())
                 .disabled(!internet.hayConexion)
             }
-            .padding()
+            .padding(.horizontal, Medida.margen)
+            .padding(.bottom, 24)
         }
     }
 }

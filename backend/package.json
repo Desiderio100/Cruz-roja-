@@ -1,0 +1,22 @@
+{
+  "name": "cruzroja-api",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "description": "API única de la app Cruz Roja. Una carpeta de rutas por pantalla en src/rutas.",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --env-file=.env --watch src/server.js",
+    "probar": "node scripts/probar.js"
+  },
+  "engines": {
+    "node": ">=20.6"
+  },
+  "dependencies": {
+    "express": "^5.3.0",
+    "express-rate-limit": "^8.7.1",
+    "helmet": "^8.3.0",
+    "mysql2": "^3.24.6",
+    "zod": "^3.24.2"
+  }
+}
