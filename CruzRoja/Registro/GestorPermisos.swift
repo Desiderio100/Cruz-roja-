@@ -4,6 +4,7 @@
 //
 // Los textos que ve la persona en la alerta de iOS están en el proyecto:
 // target CruzRoja › Build Settings › "Privacy - … Usage Description".
+//Tonchez
 
 import AVFoundation
 import CoreLocation
