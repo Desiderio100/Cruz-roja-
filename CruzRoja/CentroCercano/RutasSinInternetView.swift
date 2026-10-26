@@ -3,6 +3,7 @@
 
 import SwiftUI
 
+/// Explica cómo descargar el mapa de Monterrey en Apple Maps o Google Maps para tener rutas sin internet.
 struct RutasSinInternetView: View {
     @Environment(\.dismiss) private var cerrar
 

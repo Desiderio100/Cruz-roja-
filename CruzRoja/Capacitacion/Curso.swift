@@ -1,5 +1,6 @@
 import Foundation
 
+/// Un curso de capacitación con su fecha, sede y cupo.
 struct Curso: Identifiable, Hashable {
     let id: String
     let titulo: String
@@ -11,9 +12,11 @@ struct Curso: Identifiable, Hashable {
     var inscritos: Int
     let costo: Int?          // nil = gratuito
 
+    /// Lugares que quedan; nunca es negativo.
     var lugaresDisponibles: Int { max(0, cupo - inscritos) }
     var estaLleno: Bool { lugaresDisponibles == 0 }
 
+    /// "Curso lleno", "Queda 1 lugar" o "Quedan N lugares".
     var textoLugares: String {
         switch lugaresDisponibles {
         case 0: "Curso lleno"
@@ -22,6 +25,7 @@ struct Curso: Identifiable, Hashable {
         }
     }
 
+    /// "$350 MXN" o "Gratuito".
     var textoCosto: String { (costo ?? 0) > 0 ? "$\(costo!) MXN" : "Gratuito" }
 
     var textoFecha: String { fecha.textoCurso }

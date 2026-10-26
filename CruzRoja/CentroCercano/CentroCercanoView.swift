@@ -5,6 +5,8 @@
 import SwiftUI
 import MapKit
 
+/// Centro más cercano (HU11): mapa con todos los centros, tu centro más cercano con flecha,
+/// distancia y sentido, y la lista de centros ordenada por distancia. Funciona sin internet.
 struct CentroCercanoView: View {
     @Environment(Ubicacion.self) private var ubicacion
     @Environment(Internet.self) private var internet
@@ -76,6 +78,7 @@ struct CentroCercanoView: View {
         }
     }
 
+    /// Mueve el mapa para mostrar el centro elegido.
     private func enfocar(_ centro: Centro) {
         guard let punto = ubicacion.coordenada else {
             withAnimation { camara = .region(MKCoordinateRegion(center: centro.coordenada, latitudinalMeters: 4_000, longitudinalMeters: 4_000)) }
@@ -90,6 +93,7 @@ struct CentroCercanoView: View {
         }
     }
 
+    /// Metros desde tu ubicación actual hasta el centro, o `nil` si aún no hay GPS.
     private func distancia(a centro: Centro?) -> CLLocationDistance? {
         guard let centro, let punto = ubicacion.coordenada else { return nil }
         return centro.distancia(desde: punto)
@@ -155,6 +159,7 @@ struct CentroCercanoView: View {
         .tarjeta()
     }
 
+    /// Modo presentación: mueve la ubicación simulada de un centro a otro cada 1.5 s.
     private func correrPrueba() async {
         guard prueba else {
             ubicacion.detenerSimulacion()
@@ -180,6 +185,7 @@ struct CentroCercanoView: View {
 
 // MARK: - Tarjetas
 
+/// Tarjeta del centro más cercano: nombre, dirección, distancia, si te acercas y "Cómo llegar".
 private struct TarjetaCentroCercano: View {
     let centro: Centro?
     let metros: CLLocationDistance?

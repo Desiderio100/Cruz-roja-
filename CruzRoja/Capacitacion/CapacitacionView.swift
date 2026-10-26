@@ -1,5 +1,6 @@
 import SwiftUI
 
+/// Pantalla de Capacitación: pestaña Cursos (HU14) y pestaña Aprende (primeros auxilios).
 struct CapacitacionView: View {
     enum Parte: String, CaseIterable { case cursos = "Cursos", aprende = "Aprende" }
     @State private var parte: Parte = .cursos
@@ -24,6 +25,7 @@ struct CapacitacionView: View {
 
 // MARK: - Mis inscripciones + lista de cursos
 
+/// Mis inscripciones (con folio) y los próximos cursos con fecha y lugares disponibles.
 struct ListaCursosView: View {
     @Environment(CapacitacionModelo.self) private var capacitacion
     @Environment(Internet.self) private var internet
@@ -80,6 +82,7 @@ struct ListaCursosView: View {
 
 // MARK: - Detalle e inscripción
 
+/// Detalle de un curso y formulario de inscripción. Sin internet o sin cupo, no deja inscribirse.
 struct DetalleCursoView: View {
     @Environment(CapacitacionModelo.self) private var capacitacion
     @Environment(Internet.self) private var internet
@@ -152,6 +155,7 @@ struct DetalleCursoView: View {
         }
     }
 
+    /// Intenta la inscripción y muestra el folio o el motivo del error.
     private func inscribir(_ curso: Curso) {
         do {
             folioNuevo = try capacitacion.inscribir(en: curso, nombre: nombre, celular: celular)

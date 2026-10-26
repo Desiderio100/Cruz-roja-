@@ -4,6 +4,7 @@
 
 import Foundation
 
+/// Tema de primeros auxilios de la pestaña Aprende: pasos y video.
 struct Tema: Identifiable {
     let id: String
     let titulo: String
@@ -12,6 +13,7 @@ struct Tema: Identifiable {
     let videoID: String?
     let busqueda: String
 
+    /// El video elegido o, si no hay, una búsqueda del tema en YouTube.
     var urlVideo: URL {
         if let videoID, Self.esIDValido(videoID) {
             return URL(string: "https://www.youtube.com/watch?v=\(videoID)")!
@@ -26,6 +28,7 @@ struct Tema: Identifiable {
         return URL(string: "https://img.youtube.com/vi/\(videoID)/hqdefault.jpg")
     }
 
+    /// `true` si `id` tiene la forma de un ID de YouTube (11 letras, números, "-" o "_").
     static func esIDValido(_ id: String) -> Bool {
         id.count == 11 && id.allSatisfy { $0.isASCII && ($0.isLetter || $0.isNumber || $0 == "-" || $0 == "_") }
     }
