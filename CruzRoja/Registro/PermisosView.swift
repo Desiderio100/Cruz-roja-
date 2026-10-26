@@ -1,6 +1,7 @@
 // HU01 · "Permisos": ubicación, micrófono, cámara y notificaciones.
 // "Continuar" pide los que falten; "Omitir por ahora" entra sin pedir nada.
 // Todos son opcionales y se pueden cambiar después en Mi perfil o en Ajustes del iPhone.
+//Tonchez
 
 import SwiftUI
 
