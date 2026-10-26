@@ -1,5 +1,6 @@
 // Mi perfil (botón de la persona en la pantalla principal): tus datos, tus permisos y,
 // para probar, reiniciar la configuración inicial (HU01).
+//Tonchez
 
 import SwiftUI
 
