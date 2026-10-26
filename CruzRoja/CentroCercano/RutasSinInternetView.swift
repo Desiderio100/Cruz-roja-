@@ -1,4 +1,4 @@
-// Nosotros no podemos calcular rutas por calles sin internet; Apple Maps y
+// La app no calcula rutas por calles sin internet; Apple Maps y
 // Google Maps sí, si antes descargaste el mapa de Monterrey (una sola vez).
 
 import SwiftUI

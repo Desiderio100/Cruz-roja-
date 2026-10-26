@@ -1,5 +1,5 @@
-// Por ahora todo es local (cursos de ejemplo). Cuando Sebastián tenga el backend,
-// solo cambian `cursos` (descargarlos) y el cuerpo de `inscribir` (mandarlo al servidor).
+// En el Sprint 1 los cursos son de ejemplo. Al conectar el endpoint de cursos solo cambian
+// `cursos` (descargarlos) y el cuerpo de `inscribir` (mandarlo al servidor).
 //
 // Inscribirse requiere internet: el cupo vive en el servidor y sin conexión
 // podríamos darle a dos personas el último lugar.

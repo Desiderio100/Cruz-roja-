@@ -1,6 +1,6 @@
-// El botón de llamar NO va aquí: irá en la página principal. Para marcar al
-// centro más cercano desde ahí:
-//     Link("Llamar", destination: Telefono.url(centro.telefono))
+// Centro más cercano (HU11). La llamada se hace desde el Botón de emergencia de la
+// pantalla principal, que usa `Centro.masCercano` para saber a qué centro marcar
+// cuando no hay internet.
 
 import SwiftUI
 import MapKit

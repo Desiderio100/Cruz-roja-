@@ -1,4 +1,4 @@
-// La lista viene de centros.json, que va DENTRO de la app: funciona sin internet.
+// La lista viene de centros.json, que va dentro de la app: funciona sin internet.
 // Para agregar o corregir un centro, edita ese archivo.
 
 import CoreLocation
