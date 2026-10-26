@@ -33,7 +33,7 @@ y el respaldo de Emergencia funcionan sin servidor.
    administra Aiven, **en privado**), y descarga `ca.pem` de la consola de Aiven (el servicio → *Connection
    information* → *CA certificate*).
 4. `npm run dev` → debe decir *API escuchando en el puerto 3000*. Déjalo abierto.
-5. En otra Terminal, dentro de `backend/`: `npm run probar` → deben salir ✅ (solo lee, no escribe).
+5. En otra Terminal, dentro de `backend/`: `npm run probar` → todas las pruebas deben salir bien (solo lee, no escribe).
 6. En Xcode, ⌘R. El simulador usa `http://localhost:3000` (`CruzRoja/Comun/Configuracion.swift`).
 
 **Registro con SMS:** con `SMS_MODO=twilio` el backend manda el SMS con Twilio. Si Twilio no puede
@@ -47,6 +47,8 @@ Para un iPhone real: en `Configuracion.swift` cambia `localhost` por la IP de tu
 
 **Para probar el registro otra vez:** botón de la persona (arriba a la derecha) → *Reiniciar configuración inicial*.
 
+**Pruebas unitarias:** en Xcode, ⌘U corre el target `CruzRojaTests` (Swift Testing). No necesita internet ni el backend.
+
 ## Cómo está organizado
 
 ```
@@ -56,9 +58,9 @@ CruzRoja/
 │   │                             Crea tu cuenta → Permisos → Pantalla principal
 │   ├── PantallaPrincipal.swift ← no hace falta tocarlo
 │   ├── BotonesInicio.swift     ← Emergencia y Donar
-│   └── Secciones.swift         ← ⭐ AQUÍ agregas tu pantalla (una entrada)
+│   └── Secciones.swift         ← AQUÍ agregas tu pantalla (una entrada)
 ├── Comun/                      ← lo que puede usar cualquiera
-│   ├── Estilo.swift            ← ⭐ EL estilo de la app: rojo, botones, tarjetas, campos, logo
+│   ├── Estilo.swift            ← EL estilo de la app: rojo, botones, tarjetas, campos, logo
 │   ├── ClienteAPI.swift        ← cliente del backend (id del dispositivo, errores, reintento)
 │   ├── Configuracion.swift     ← dirección del backend y ajustes (UN solo lugar)
 │   ├── Dispositivo.swift       ← id de este iPhone ante el servidor + Perfil (nombre/teléfono, en el Llavero)
@@ -87,8 +89,8 @@ backend/
 | Pantalla | Dueño | App | Backend |
 |---|---|---|---|
 | Registro, SMS y permisos (HU01) | autor de HU01 | `Registro/` | `rutas/registro.js`, `rutas/consentimientos.js`, `sms.js` |
-| Centro más cercano (HU11) | Desiderio | `CentroCercano/` | — (usa `centros.json`) |
-| Capacitación (HU14) | Desiderio | `Capacitacion/` | — (cursos de ejemplo) |
+| Centro más cercano (HU11) | Desiderio | `CentroCercano/` | No usa (lee `centros.json`) |
+| Capacitación (HU14) | Desiderio | `Capacitacion/` | No usa (cursos de ejemplo) |
 | Agenda de citas | Luis | `Citas/` | `rutas/citas.js`, `rutas/dispositivos.js` |
 | Productos con causa | Sebastián | `Ventas/` | `rutas/productos.js` |
 | Emergencia y llamada | a2 | `Emergencia/` | `rutas/llamadas.js` |
@@ -149,7 +151,7 @@ Las fuentes son las del sistema (`.headline`, `.subheadline`, `.footnote`…), n
 ```swift
 @Environment(Ubicacion.self) private var ubicacion
 
-ubicacion.coordenada     // CLLocationCoordinate2D? — dónde está el usuario
+ubicacion.coordenada     // CLLocationCoordinate2D?: dónde está el usuario
 ubicacion.tienePermiso   // Bool
 ubicacion.pedirPermiso() // muestra la alerta de iOS
 ```
@@ -179,42 +181,42 @@ Link("Llamar", destination: Telefono.url(numero))
 
 ## Qué hace cada función
 
-**Configuración inicial (HU01)** — la primera vez que se abre la app:
+**Configuración inicial (HU01)**. La primera vez que se abre la app:
 1. *Crea tu cuenta*: nombre y celular → *Continuar* manda un código de 6 dígitos por SMS.
 2. *Verifica tu número*: el código vence en 5 minutos; se puede reenviar cada 60 s; 5 intentos fallidos lo invalidan. Si es correcto, el servidor guarda el teléfono verificado en el dispositivo (tabla `dispositivo`).
 3. *Permisos*: ubicación, micrófono, cámara y notificaciones. Cada respuesta se guarda en la tabla `consentimiento` con la versión vigente del aviso de privacidad.
 
 Todo es opcional: *Omitir por ahora* entra sin cuenta y la emergencia funciona igual. El nombre se queda solo en el iPhone (en el Llavero). Si el servidor no responde, la app sigue.
 
-**Centro más cercano** — mapa satelital con todos los centros (el más cercano en rojo); tu centro más cercano con dirección, referencia ("Sobre Av. …"), una **flecha con km y sentido** ("a 2.3 km · adelante a la derecha") y si **te estás acercando o alejando**; *Cómo llegar* (Apple Maps, Google Maps o Waze); y la lista de todos los centros del más cercano al más lejano.
+**Centro más cercano**: mapa satelital con todos los centros (el más cercano en rojo); tu centro más cercano con dirección, referencia ("Sobre Av. …"), una **flecha con km y sentido** ("a 2.3 km · adelante a la derecha") y si **te estás acercando o alejando**; *Cómo llegar* (Apple Maps, Google Maps o Waze); y la lista de todos los centros del más cercano al más lejano.
 
 Sin internet: la lista, los km, la flecha y la referencia siguen funcionando (solo GPS y brújula). El mapa se ve gris pero con pines. Para rutas por calles sin internet, la app explica cómo descargar el mapa de Monterrey en Apple/Google Maps (*¿Rutas sin internet?*). En carro la flecha usa la dirección del GPS, no la brújula.
 
 Para presentar: el interruptor **Simular recorrido por Monterrey** mueve tu ubicación poco a poco, como en carro. Para probar sin internet en el simulador, apaga el Wi-Fi de la Mac.
 
-**Capacitación** — dos pestañas:
+**Capacitación**. Dos pestañas:
 - *Cursos*: **Mis inscripciones** (con folio) arriba y los próximos cursos con fecha y lugares. Inscripción con folio de confirmación (nombre y celular ya vienen llenos si te registraste); si está lleno no deja inscribirse. Cursos de ejemplo por ahora (`Curso.ejemplos`); el lugar para conectar el backend está marcado en `CapacitacionModelo.swift`.
 - *Aprende*: lo básico que todos deberíamos saber (pedir ayuda, RCP, atragantamiento, hemorragias, posición lateral, quemaduras) con los pasos siempre abiertos y un video de YouTube por tema. Para cambiar un video, edita `videoID` en `Tema.swift`.
 
 | Capacitación | Con internet | Sin internet |
 |---|---|---|
-| Ver cursos | ✅ | ✅ con aviso "los lugares pueden haber cambiado" |
-| Inscribirse | ✅ | ❌ botón apagado (el cupo vive en el servidor) |
-| Mis inscripciones | ✅ | ✅ guardadas en el teléfono |
-| Pasos de Aprende | ✅ | ✅ texto dentro de la app |
-| Videos | ✅ | ❌ aviso "Necesitas internet" |
+| Ver cursos | Sí | Sí, con aviso "los lugares pueden haber cambiado" |
+| Inscribirse | Sí | No, botón apagado (el cupo vive en el servidor) |
+| Mis inscripciones | Sí | Sí, guardadas en el teléfono |
+| Pasos de Aprende | Sí | Sí, texto dentro de la app |
+| Videos | Sí | No, aviso "Necesitas internet" |
 
-**Agenda de citas** — nutrición y psicología: elegir día y horario libre, confirmar, ver *Mis citas*, cancelar y elegir nuevo horario cuando una cita queda pospuesta. Si la persona no se registró, la primera vez pide nombre y teléfono. Cada ruta del backend llama a un procedimiento almacenado de la base. Una cita solo la ve y la modifica el dispositivo que la creó (header `X-Dispositivo-Id`). Necesita internet y el backend.
+**Agenda de citas**: nutrición y psicología: elegir día y horario libre, confirmar, ver *Mis citas*, cancelar y elegir nuevo horario cuando una cita queda pospuesta. Si la persona no se registró, la primera vez pide nombre y teléfono. Cada ruta del backend llama a un procedimiento almacenado de la base. Una cita solo la ve y la modifica el dispositivo que la creó (header `X-Dispositivo-Id`). Necesita internet y el backend.
 
-**Productos con causa** — catálogo desde la tabla `producto` (solo activos, solo enlaces `https`), con foto. *Comprar* abre el canal oficial de Cruz Roja en el navegador; la app no procesa pagos. Necesita internet y el backend.
+**Productos con causa**: catálogo desde la tabla `producto` (solo activos, solo enlaces `https`), con foto. *Comprar* abre el canal oficial de Cruz Roja en el navegador; la app no procesa pagos. Necesita internet y el backend.
 
-**Emergencia** — el botón rojo de la pantalla principal toma tu ubicación (`Ubicacion`), la manda al backend y este elige la delegación activa más cercana (función `distancia_km` de la base), crea la llamada y su ficha, y la app abre la pantalla de llamada. Si hay nombre y teléfono guardados (`Perfil`), también se envían. **La pantalla de llamada todavía es maqueta**: registra la llamada en la base, pero no hay audio ni video reales.
+**Emergencia**: el botón rojo de la pantalla principal toma tu ubicación (`Ubicacion`), la manda al backend y este elige la delegación activa más cercana (función `distancia_km` de la base), crea la llamada y su ficha, y la app abre la pantalla de llamada. Si hay nombre y teléfono guardados (`Perfil`), también se envían. **La pantalla de llamada todavía es maqueta**: registra la llamada en la base, pero no hay audio ni video reales.
 
-**Respaldo sin internet** — si no hay internet, el servidor no responde o la ubicación está negada, el botón de Emergencia abre *Llamada por teléfono*: el centro más cercano (de `centros.json`, dentro de la app), su número y tus coordenadas GPS para dictárselas al operador. Mientras `Configuracion.directorioDePrueba` sea `true`, el botón **Llamar no marca** (los números son inventados).
+**Respaldo sin internet**: si no hay internet, el servidor no responde o la ubicación está negada, el botón de Emergencia abre *Llamada por teléfono*: el centro más cercano (de `centros.json`, dentro de la app), su número y tus coordenadas GPS para dictárselas al operador. Mientras `Configuracion.directorioDePrueba` sea `true`, el botón **Llamar no marca** (los números son inventados).
 
-**Donar** — abre el sitio oficial de Cruz Roja Mexicana (`Configuracion.urlDonar`).
+**Donar**: abre el sitio oficial de Cruz Roja Mexicana (`Configuracion.urlDonar`).
 
-## ⚠️ Datos de prueba
+## Datos de prueba
 
 `centros.json` trae **nombres, coordenadas y teléfonos inventados**. Cambiarlos por
 el directorio oficial de Cruz Roja antes de probar con usuarios, y solo entonces poner

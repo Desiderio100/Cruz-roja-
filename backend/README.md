@@ -24,7 +24,7 @@ Necesitas Node.js 20.6 o superior (`node -v` en la Terminal de VS Code).
    - `DB_PASSWORD` → tu contraseña. Te la da quien administra Aiven, **en privado** (nunca por un chat de grupo).
    - Descarga `ca.pem` desde la consola de Aiven (el servicio → *Connection information* → *CA certificate*), ponlo en esta carpeta, y que `DB_CA_PATH` apunte a él (por defecto `./ca.pem`).
 5. `npm run dev` → debe decir **API escuchando en el puerto 3000**. Déjala abierta.
-6. En otra terminal (botón **+**), dentro de `backend`: `npm run probar` → deben salir ✅. Solo lee, no escribe en la base.
+6. En otra terminal (botón **+**), dentro de `backend`: `npm run probar` → todas las pruebas deben salir bien. Solo lee, no escribe en la base.
 
 El simulador de Xcode usa `http://localhost:3000`, así que Xcode y este servidor deben estar en el mismo Mac.
 
