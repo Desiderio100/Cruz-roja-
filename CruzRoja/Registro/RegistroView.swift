@@ -1,5 +1,6 @@
 // HU01 · "Crea tu cuenta": nombre y celular → se manda un código por SMS → VerificacionView.
 // Es opcional: "Omitir por ahora" entra a la app sin cuenta y la emergencia funciona igual.
+//Tonchez
 
 import SwiftUI
 
