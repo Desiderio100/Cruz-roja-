@@ -4,6 +4,7 @@
 //   POST /api/consentimientos      guarda que se aceptó o negó un permiso (backend/src/rutas/consentimientos.js)
 //
 // En desarrollo el backend NO manda SMS: el código sale en la terminal donde corre `npm run dev`.
+//Tonchez
 
 import Foundation
 
