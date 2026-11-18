@@ -20,6 +20,11 @@ struct CruzRojaApp: App {
                 .environment(capacitacion)
                 .environment(internet)
                 .tint(Color.rojoCruzRoja)
+                // Si el banco pide confirmar el pago fuera de la app, Stripe regresa por aquí
+                // (esquema "cruzroja://", ver CruzRoja-Info.plist y Ventas/PagoStripe.swift).
+                .onOpenURL { url in
+                    PagoStripe.manejar(url: url)
+                }
         }
     }
 }

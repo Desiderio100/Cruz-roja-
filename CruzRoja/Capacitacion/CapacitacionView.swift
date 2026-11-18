@@ -26,6 +26,7 @@ struct CapacitacionView: View {
 // MARK: - Mis inscripciones + lista de cursos
 
 /// Mis inscripciones (con folio) y los próximos cursos con fecha y lugares disponibles.
+/// Los cursos se descargan del backend al entrar y al jalar la lista hacia abajo.
 struct ListaCursosView: View {
     @Environment(CapacitacionModelo.self) private var capacitacion
     @Environment(Internet.self) private var internet
@@ -35,6 +36,17 @@ struct ListaCursosView: View {
             if !internet.hayConexion {
                 AvisoSinInternet("tus inscripciones se ven igual; los lugares pueden haber cambiado")
                     .listRowSeparator(.hidden)
+            } else if capacitacion.errorDeCarga != nil, !capacitacion.cursos.isEmpty {
+                // Hay internet pero el servidor no respondió: se ve la última lista guardada.
+                HStack(alignment: .firstTextBaseline, spacing: 10) {
+                    Label("No pudimos actualizar los cursos. Ves la última lista guardada.",
+                          systemImage: "exclamationmark.triangle.fill")
+                        .foregroundStyle(.secondary)
+                    Spacer(minLength: 4)
+                    botonReintentarCarga
+                }
+                .font(.footnote.bold())
+                .listRowSeparator(.hidden)
             }
 
             if !capacitacion.inscripciones.isEmpty {
@@ -50,11 +62,16 @@ struct ListaCursosView: View {
                         }
                         .font(.subheadline)
                         .padding(.vertical, 4)
+                        // VoiceOver lee la inscripción completa de una vez, no etiqueta por etiqueta.
+                        .accessibilityElement(children: .combine)
                     }
                 }
             }
 
             Section("Próximos cursos") {
+                if capacitacion.cursos.isEmpty {
+                    sinCursos
+                }
                 ForEach(capacitacion.cursos) { curso in
                     NavigationLink {
                         DetalleCursoView(cursoId: curso.id)
@@ -72,11 +89,45 @@ struct ListaCursosView: View {
                         }
                         .font(.subheadline)
                         .padding(.vertical, 4)
+                        .accessibilityElement(children: .combine)
                     }
                 }
             }
         }
         .listStyle(.plain)
+        .refreshable { await capacitacion.cargar() }
+        .task { await capacitacion.cargar() }
+    }
+
+    /// Lo que se ve cuando todavía no hay cursos: cargando, error o lista vacía.
+    @ViewBuilder
+    private var sinCursos: some View {
+        if capacitacion.cargando {
+            HStack(spacing: 10) {
+                ProgressView()
+                Text("Cargando cursos…").foregroundStyle(.secondary)
+            }
+        } else if let error = capacitacion.errorDeCarga {
+            VStack(alignment: .leading, spacing: 8) {
+                Label("No pudimos cargar los cursos", systemImage: "exclamationmark.triangle.fill")
+                    .font(.headline)
+                Text(error).font(.subheadline).foregroundStyle(.secondary)
+                botonReintentarCarga.bold()
+            }
+            .padding(.vertical, 4)
+        } else {
+            Text("Por ahora no hay cursos programados.")
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    private var botonReintentarCarga: some View {
+        Button("Reintentar") {
+            Task { await capacitacion.cargar() }
+        }
+        .buttonStyle(.plain)
+        .foregroundStyle(Color.rojoCruzRoja)
+        .disabled(capacitacion.cargando)
     }
 }
 
@@ -93,16 +144,24 @@ struct DetalleCursoView: View {
     @State private var celular = Perfil.telefono
     @State private var folioNuevo: String?
     @State private var error: String?
+    /// `true` mientras el servidor contesta la inscripción (evita mandar dos veces).
+    @State private var enviando = false
 
     var body: some View {
         if let curso = capacitacion.cursos.first(where: { $0.id == cursoId }) {
             Form {
                 Section {
-                    Text(curso.descripcion)
+                    if !curso.descripcion.isEmpty {
+                        Text(curso.descripcion)
+                    }
                     LabeledContent("Fecha", value: curso.textoFecha)
-                    LabeledContent("Duración", value: curso.duracion)
+                    if let duracion = curso.duracion {
+                        LabeledContent("Duración", value: duracion)
+                    }
                     LabeledContent("Lugar", value: curso.sede)
-                    LabeledContent("Costo", value: curso.textoCosto)
+                    if let costo = curso.textoCosto {
+                        LabeledContent("Costo", value: costo)
+                    }
                     LabeledContent("Lugares", value: curso.textoLugares)
                 }
 
@@ -125,9 +184,10 @@ struct DetalleCursoView: View {
                             .textContentType(.telephoneNumber)
                     }
                     Section {
-                        Button("Inscribirme") { inscribir(curso) }
+                        Button(enviando ? "Inscribiendo…" : "Inscribirme") { inscribir(curso) }
                             .buttonStyle(BotonRojo())
-                            .disabled(!internet.hayConexion
+                            .disabled(enviando
+                                      || !internet.hayConexion
                                       || !CapacitacionModelo.datosValidos(nombre: nombre, celular: celular))
                             .listRowInsets(EdgeInsets())
                     } footer: {
@@ -152,21 +212,28 @@ struct DetalleCursoView: View {
             } message: {
                 Text(error ?? "")
             }
+        } else {
+            // El curso dejó de estar en la lista (ya pasó o lo quitaron) mientras se veía su detalle.
+            ContentUnavailableView("Este curso ya no está disponible", systemImage: "calendar.badge.exclamationmark")
         }
     }
 
-    /// Intenta la inscripción y muestra el folio o el motivo del error.
+    /// Manda la inscripción al servidor y muestra el folio o el motivo del error.
     private func inscribir(_ curso: Curso) {
-        do {
-            folioNuevo = try capacitacion.inscribir(en: curso, nombre: nombre, celular: celular)
-        } catch {
-            self.error = error.localizedDescription
+        enviando = true
+        Task { @MainActor in
+            defer { enviando = false }
+            do {
+                folioNuevo = try await capacitacion.inscribir(en: curso, nombre: nombre, celular: celular)
+            } catch {
+                self.error = error.localizedDescription
+            }
         }
     }
 }
 
 #Preview {
     NavigationStack { CapacitacionView() }
-        .environment(CapacitacionModelo())
+        .environment(CapacitacionModelo(repositorio: CursosDeEjemplo()))
         .environment(Internet())
 }

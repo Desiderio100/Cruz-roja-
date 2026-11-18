@@ -10,6 +10,7 @@ import AVFoundation
 import CoreLocation
 import Foundation
 import Observation
+import Speech
 import UserNotifications
 
 enum TipoPermiso: String, CaseIterable, Identifiable {
@@ -29,7 +30,7 @@ enum TipoPermiso: String, CaseIterable, Identifiable {
     var detalle: String {
         switch self {
         case .ubicacion: "Permite que podamos encontrarte y enviarte ayuda."
-        case .microfono: "Permite que puedas hablar con nuestro equipo."
+        case .microfono: "Permite que hables con nuestro equipo y que lo que digas en una emergencia llegue como texto al operador."
         case .camara: "Permite enviar video si el operador lo pide y tú aceptas."
         case .notificaciones: "Permite recibir alertas importantes y avisos de tus citas."
         }
@@ -96,7 +97,12 @@ final class GestorPermisos: NSObject, CLLocationManagerDelegate {
             }
         case .microfono:
             guard hayTexto("NSMicrophoneUsageDescription") else { return }
-            _ = await AVCaptureDevice.requestAccess(for: .audio)
+            let permitido = await AVCaptureDevice.requestAccess(for: .audio)
+            // Con el micrófono se pide también convertir la voz en texto (transcripción de la
+            // llamada, RF12), para que en una emergencia la app no se detenga a preguntarlo.
+            if permitido, Bundle.main.object(forInfoDictionaryKey: "NSSpeechRecognitionUsageDescription") != nil {
+                _ = await ReconocedorDeVoz.pedirPermiso()
+            }
         case .camara:
             guard hayTexto("NSCameraUsageDescription") else { return }
             _ = await AVCaptureDevice.requestAccess(for: .video)

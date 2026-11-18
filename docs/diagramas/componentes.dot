@@ -1,0 +1,56 @@
+digraph componentes {
+  graph [rankdir=TB, fontname="Helvetica", fontsize=18, labelloc=t, label="App Cruz Roja · diagrama de componentes", bgcolor=white, pad=0.3, nodesep=0.25, ranksep=0.7, compound=true, newrank=true];
+  node  [shape=box, style="rounded,filled", fillcolor="#F4F4F4", color="#888888", fontname="Helvetica", fontsize=11, margin="0.12,0.07"];
+  edge  [color="#555555", fontname="Helvetica", fontsize=10, arrowsize=0.8];
+
+  subgraph cluster_presentacion {
+    label="Presentación"; fontname="Helvetica-Bold"; fontsize=14; color="#B0241A"; style=rounded;
+    subgraph cluster_app {
+      label="App iPhone (SwiftUI)"; fontname="Helvetica"; fontsize=12; color="#B0241A"; style="rounded,dashed";
+      registro   [label="Registro, SMS\ny permisos (HU01)"];
+      emergencia [label="Emergencia, transcripción\n(IA, Speech) y respaldo\nsin internet"];
+      centro     [label="Centro más\ncercano (HU11)"];
+      capacita   [label="Capacitación\n(HU14)"];
+      citas      [label="Agenda de citas"];
+      ventas     [label="Productos con causa\ny compra"];
+      comun      [label="Comun: ClienteAPI, Dispositivo,\nUbicacion, Internet, Estilo", fillcolor="#FBE9E7"];
+    }
+    subgraph cluster_web {
+      label="Web del personal (navegador)"; fontname="Helvetica"; fontsize=12; color="#B0241A"; style="rounded,dashed";
+      admin  [label="Sitio de administración\nde pedidos (/admin)"];
+      panel  [label="Panel del personal:\nllamadas y citas"];
+    }
+  }
+
+  subgraph cluster_integracion {
+    label="Integración"; fontname="Helvetica-Bold"; fontsize=14; color="#1F5F8B"; style=rounded;
+    api [label="API REST · Node + Express (puerto 3000)\n/api/registro · /api/consentimientos · /api/dispositivos · /api/llamadas\n/api/citas · /api/cursos · /api/productos · /api/pedidos\n/admin/api · /stripe/webhook · /salud", fillcolor="#E3F2FD"];
+    srvpanel [label="Servidor del panel · Node + Express (puerto 4000)\n/Acceso · /Llamadas · /Citas", fillcolor="#E3F2FD"];
+  }
+
+  subgraph cluster_almacen {
+    label="Almacenamiento"; fontname="Helvetica-Bold"; fontsize=14; color="#2E7D32"; style=rounded;
+    mysql [label="MySQL · base cruzroja\n22 tablas, vistas, procedimientos y disparadores", shape=cylinder, fillcolor="#E8F5E9"];
+    local [label="En el iPhone: Llavero (id del dispositivo, nombre y teléfono),\nUserDefaults (cursos e inscripciones), centros.json", fillcolor="#E8F5E9"];
+  }
+
+  subgraph cluster_externos {
+    label="Componentes externos"; fontname="Helvetica-Bold"; fontsize=14; color="#8E5A00"; style=rounded;
+    stripe [label="Stripe\n(cobro y reembolsos)", fillcolor="#FFF3E0"];
+    twilio [label="Twilio\n(SMS de verificación)", fillcolor="#FFF3E0"];
+    mapas  [label="Apple Maps, Google Maps,\nWaze y YouTube", fillcolor="#FFF3E0"];
+  }
+
+  {registro emergencia capacita citas ventas} -> comun [color="#B0241A"];
+  comun -> api   [label="HTTPS + JSON\nX-Dispositivo-Id"];
+  admin -> api   [label="sesión del personal"];
+  panel -> srvpanel [label="sesión con matrícula"];
+  api -> mysql [label="SQL y CALL (TLS)"];
+  srvpanel -> mysql [label="CALL (TLS)"];
+  comun -> local [style=dashed];
+  centro -> local [style=dashed, label="directorio sin internet"];
+  api -> stripe [dir=both, label="cobro y reembolso (ida)\nwebhook firmado (vuelta)"];
+  ventas -> stripe [label="hoja de pago"];
+  api -> twilio;
+  {centro capacita} -> mapas [style=dashed];
+}

@@ -84,7 +84,7 @@ struct ProductosCausaView: View {
                 }
                 .padding(.horizontal, Medida.margen)
 
-                Text("Comprar abre el canal oficial de Cruz Roja. La app no procesa pagos.")
+                Text("Pagas con tarjeta dentro de la app y te lo enviamos a domicilio. El pago lo procesa Stripe: la app no guarda los datos de tu tarjeta.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -124,6 +124,7 @@ struct ProductosCausaView: View {
 
 struct ProductoTarjeta: View {
     let producto: Producto
+    @State private var comprando = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -138,10 +139,14 @@ struct ProductoTarjeta: View {
                 .foregroundStyle(.secondary)
                 .lineLimit(2, reservesSpace: true)
 
-            Link(destination: producto.enlaceCompra) {
+            // Antes este botón abría el canal oficial en el navegador (Link a producto.enlaceCompra).
+            // Ahora abre la hoja de compra con pago dentro de la app.
+            Button {
+                comprando = true
+            } label: {
                 HStack(spacing: 6) {
                     Text("Comprar")
-                    Image(systemName: "arrow.up.right.square")
+                    Image(systemName: "creditcard")
                 }
                 .font(.subheadline.weight(.bold))
                 .foregroundStyle(.white)
@@ -149,9 +154,12 @@ struct ProductoTarjeta: View {
                 .background(Color.rojoCruzRoja, in: RoundedRectangle(cornerRadius: Medida.radio, style: .continuous))
             }
             .accessibilityLabel("Comprar \(producto.nombre)")
-            .accessibilityHint("Abre el canal oficial de Cruz Roja en el navegador")
+            .accessibilityHint("Abre la compra con pago con tarjeta y envío a domicilio")
         }
         .tarjetaConBorde()
+        .sheet(isPresented: $comprando) {
+            CompraView(producto: producto)
+        }
     }
 
     private var imagen: some View {

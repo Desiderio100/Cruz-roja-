@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="color-scheme" content="light dark">
+  <title>Pedidos · Cruz Roja</title>
+  <link rel="stylesheet" href="admin.css">
+  <script src="admin.js" defer></script>
+</head>
+<body>
+
+  <!-- ───────── Inicio de sesión ───────── -->
+  <main id="vista-login" class="login" hidden>
+    <form id="form-login" class="login__tarjeta" autocomplete="on" novalidate>
+      <h1 class="login__titulo">Pedidos · Productos con causa</h1>
+      <p class="login__subtitulo">Acceso para el personal de Cruz Roja</p>
+
+      <label class="campo" for="login-usuario">Usuario
+        <input id="login-usuario" name="usuario" type="text" autocomplete="username" autocapitalize="none"
+               spellcheck="false" required maxlength="60">
+      </label>
+      <label class="campo" for="login-contrasena">Contraseña
+        <input id="login-contrasena" name="contrasena" type="password" autocomplete="current-password"
+               required maxlength="128">
+      </label>
+
+      <p id="login-error" class="mensaje-error" role="alert" hidden></p>
+      <button id="login-boton" class="boton boton--primario boton--ancho" type="submit">Entrar</button>
+    </form>
+  </main>
+
+  <!-- ───────── Aplicación ───────── -->
+  <div id="vista-app" hidden>
+    <header class="barra">
+      <div class="barra__titulo">
+        <h1>Pedidos</h1>
+        <span>Productos con causa</span>
+      </div>
+      <div class="barra__persona">
+        <span id="persona" class="barra__quien"></span>
+        <a id="enlace-panel" class="boton boton--texto" target="_blank" rel="noopener" hidden>Llamadas y citas</a>
+        <button id="boton-salir" class="boton boton--texto" type="button">Salir</button>
+      </div>
+    </header>
+
+    <p id="banner" class="banner" hidden></p>
+
+    <main class="contenedor">
+      <section class="herramientas" aria-label="Filtros">
+        <div id="filtros" class="chips" role="group" aria-label="Estado de los pedidos"></div>
+        <div class="herramientas__derecha">
+          <label class="busqueda" for="busqueda">
+            <span class="solo-lector">Buscar pedidos</span>
+            <input id="busqueda" type="search" placeholder="Buscar por folio, nombre, teléfono o producto"
+                   maxlength="60" autocomplete="off">
+          </label>
+          <button id="boton-actualizar" class="boton" type="button">Actualizar</button>
+        </div>
+      </section>
+
+      <p id="estado-lista" class="estado-lista" role="status" aria-live="polite"></p>
+
+      <div class="tabla-envoltura">
+        <table id="tabla" class="tabla" hidden>
+          <caption class="solo-lector">Lista de pedidos</caption>
+          <thead>
+            <tr>
+              <th scope="col">Folio</th>
+              <th scope="col">Fecha</th>
+              <th scope="col">Cliente</th>
+              <th scope="col">Producto</th>
+              <th scope="col" class="num">Total</th>
+              <th scope="col">Pago</th>
+              <th scope="col">Envío</th>
+            </tr>
+          </thead>
+          <tbody id="cuerpo-tabla"></tbody>
+        </table>
+      </div>
+
+      <nav id="paginacion" class="paginacion" aria-label="Páginas" hidden>
+        <span id="paginacion-texto"></span>
+        <span class="paginacion__botones">
+          <button id="pagina-anterior" class="boton" type="button">Anterior</button>
+          <button id="pagina-siguiente" class="boton" type="button">Siguiente</button>
+        </span>
+      </nav>
+    </main>
+  </div>
+
+  <!-- ───────── Detalle de un pedido ───────── -->
+  <dialog id="dialogo-detalle" class="panel" aria-labelledby="detalle-titulo">
+    <div id="detalle-contenido"></div>
+  </dialog>
+
+  <!-- ───────── Confirmar reembolso ───────── -->
+  <dialog id="dialogo-reembolso" class="modal" aria-labelledby="reembolso-titulo">
+    <form id="form-reembolso" method="dialog">
+      <h2 id="reembolso-titulo">¿Reembolsar este pedido?</h2>
+      <p id="reembolso-texto"></p>
+      <label class="campo" for="reembolso-motivo">Motivo (opcional)
+        <textarea id="reembolso-motivo" rows="3" maxlength="200"
+                  placeholder="Por ejemplo: llegó dañado, el cliente lo pidió…"></textarea>
+      </label>
+      <p id="reembolso-error" class="mensaje-error" role="alert" hidden></p>
+      <div class="modal__acciones">
+        <button id="reembolso-cancelar" class="boton" type="button">Cancelar</button>
+        <button id="reembolso-confirmar" class="boton boton--peligro" type="submit">Sí, reembolsar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="avisos" class="avisos" role="status" aria-live="polite"></div>
+</body>
+</html>

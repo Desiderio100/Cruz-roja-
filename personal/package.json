@@ -1,0 +1,20 @@
+{
+  "name": "cruzroja-personal",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Sitio web del personal de Cruz Roja: acceso con matricula, Llamadas (operador) y Citas (administrativo).",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --env-file=.env --watch src/server.js"
+  },
+  "engines": {
+    "node": ">=20.6"
+  },
+  "dependencies": {
+    "cookie-session": "^2.1.1",
+    "express": "^5.3.0",
+    "helmet": "^8.3.0",
+    "mysql2": "^3.24.6"
+  }
+}

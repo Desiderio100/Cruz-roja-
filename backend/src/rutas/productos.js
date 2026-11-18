@@ -15,7 +15,8 @@ export function rutasProductos(pool) {
           WHERE activo = 1
           ORDER BY id`
       );
-      // La compra ocurre fuera de la app: solo se entregan enlaces https.
+      // La compra ya ocurre dentro de la app (pedidos.js). El enlace se sigue mandando porque la
+      // app lo espera en la respuesta; por seguridad solo se entregan enlaces https.
       const productos = filas.filter((p) => p.enlace_compra.startsWith('https://'));
       res.set('Cache-Control', 'public, max-age=60');
       res.json({ productos });

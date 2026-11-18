@@ -1,3 +1,4 @@
+// Responsable del módulo de emergencia: Ayhan Ben Halima Martinez · A01647593
 import SwiftUI
 
 struct EmergencyCallView: View {
@@ -11,6 +12,8 @@ struct EmergencyCallView: View {
     @State private var hasPresentedVideoRequest = false
     @State private var isVideoActive = false
     @State private var camara = CamaraLlamada()
+    /// Convierte en texto lo que dice la persona y lo manda al operador (RF12).
+    @State private var transcriptor = TranscriptorLlamada()
     @State private var camaraNegada = false
     @Environment(\.openURL) private var abrirURL
 
@@ -58,6 +61,15 @@ struct EmergencyCallView: View {
                 }
             }
         }
+        .task {
+            await transcriptor.iniciar()
+            // Cada pocos segundos se mandan al operador las frases que ya terminaron.
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(4))
+                guard !Task.isCancelled else { return }
+                await transcriptor.enviarPendientes(de: session.id)
+            }
+        }
         .alert("El operador solicita ver tu cámara", isPresented: $isVideoRequestPresented) {
             Button("Rechazar", role: .cancel) { }
             Button("Aceptar") {
@@ -74,7 +86,10 @@ struct EmergencyCallView: View {
         } message: {
             Text("Permite el acceso a la cámara en Configuración para enviar video al operador.")
         }
-        .onDisappear { camara.apagar() }
+        .onDisappear {
+            camara.apagar()
+            transcriptor.detener()
+        }
     }
 
     @MainActor
@@ -143,8 +158,50 @@ struct EmergencyCallView: View {
                 .padding(.vertical, 8)
                 .background(.white.opacity(0.1), in: Capsule())
                 .padding(.top, 4)
+
+            transcriptionStatus
         }
         .padding(.top, 28)
+    }
+
+    /// Estado de la transcripción: la persona ve que lo que dice le llega al operador como texto.
+    @ViewBuilder
+    private var transcriptionStatus: some View {
+        switch transcriptor.estado {
+        case .apagado:
+            EmptyView()
+        case .escuchando:
+            VStack(spacing: 6) {
+                Label("Transcribiendo para el operador", systemImage: "waveform")
+                    .font(.footnote.weight(.semibold))
+                if !transcriptor.textoVisible.isEmpty {
+                    Text(transcriptor.textoVisible)
+                        .font(.footnote)
+                        .foregroundStyle(.white.opacity(0.72))
+                        .multilineTextAlignment(.center)
+                        .lineLimit(3)
+                }
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 8)
+            .background(.white.opacity(0.1), in: RoundedRectangle(cornerRadius: 14))
+            // VoiceOver lo lee como un solo elemento, no etiqueta y texto por separado.
+            .accessibilityElement(children: .combine)
+        case .pausado:
+            transcriptionNotice("Transcripción en pausa: el micrófono está silenciado")
+        case .noDisponible(let motivo):
+            transcriptionNotice(motivo)
+        }
+    }
+
+    private func transcriptionNotice(_ texto: String) -> some View {
+        Label(texto, systemImage: "mic.slash.fill")
+            .font(.footnote.weight(.semibold))
+            .foregroundStyle(.white.opacity(0.72))
+            .multilineTextAlignment(.center)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 8)
+            .background(.white.opacity(0.1), in: RoundedRectangle(cornerRadius: 14))
     }
 
     private var videoStatus: some View {
@@ -185,6 +242,12 @@ struct EmergencyCallView: View {
                 isActive: isMuted
             ) {
                 isMuted.toggle()
+                // Con el micrófono silenciado tampoco se transcribe.
+                if isMuted {
+                    transcriptor.pausar()
+                } else {
+                    Task { await transcriptor.reanudar() }
+                }
             }
 
             Spacer()
@@ -201,6 +264,9 @@ struct EmergencyCallView: View {
 
             CallControl(title: "Colgar", icon: "phone.down.fill", color: .rojoCruzRoja) {
                 Task {
+                    // Lo último que se dijo alcanza a llegar al operador antes de cerrar la llamada.
+                    transcriptor.detener()
+                    await transcriptor.enviarPendientes(de: session.id)
                     try? await EmergencyAPI.shared.updateCall(
                         id: session.id,
                         status: "finalizada"

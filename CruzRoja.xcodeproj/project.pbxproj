@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		CC3D948330ABA10C00B97875 /* StripePaymentSheet in Frameworks */ = {isa = PBXBuildFile; productRef = CC3D948230ABA10C00B97875 /* StripePaymentSheet */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		C2A0E1000000000000000022 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -41,6 +45,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CC3D948330ABA10C00B97875 /* StripePaymentSheet in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -61,6 +66,7 @@
 				C2A0E100000000000000001B /* CruzRojaTests */,
 				C2A0E1000000000000000019 /* CruzRoja-Info.plist */,
 				C2A0E100000000000000000C /* Simulacion */,
+				CC3D948130ABA10C00B97875 /* Frameworks */,
 				C2A0E100000000000000000D /* Products */,
 			);
 			sourceTree = "<group>";
@@ -82,6 +88,13 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		CC3D948130ABA10C00B97875 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -101,6 +114,9 @@
 				C2A0E1000000000000000009 /* CruzRoja */,
 			);
 			name = CruzRoja;
+			packageProductDependencies = (
+				CC3D948230ABA10C00B97875 /* StripePaymentSheet */,
+			);
 			productName = CruzRoja;
 			productReference = C2A0E1000000000000000007 /* CruzRoja.app */;
 			productType = "com.apple.product-type.application";
@@ -154,6 +170,9 @@
 			);
 			mainGroup = C2A0E100000000000000000B;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				CC3D948030AB9E8E00B97875 /* XCRemoteSwiftPackageReference "stripe-ios-spm" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = C2A0E100000000000000000D /* Products */;
 			projectDirPath = "";
@@ -348,6 +367,7 @@
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "En desarrollo, la app se conecta al servidor de Cruz Roja que corre en tu red local.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Usamos tu ubicación para mostrarte el centro de Cruz Roja más cercano y, si pides ayuda, avisar a la delegación más cercana dónde estás.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "El micrófono permite que hables con el operador durante una llamada de emergencia.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Lo que dices en una llamada de emergencia se convierte en texto en tu iPhone para que el operador llene la ficha más rápido.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -380,6 +400,7 @@
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "En desarrollo, la app se conecta al servidor de Cruz Roja que corre en tu red local.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Usamos tu ubicación para mostrarte el centro de Cruz Roja más cercano y, si pides ayuda, avisar a la delegación más cercana dónde estás.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "El micrófono permite que hables con el operador durante una llamada de emergencia.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Lo que dices en una llamada de emergencia se convierte en texto en tu iPhone para que el operador llene la ficha más rápido.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -464,6 +485,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		CC3D948030AB9E8E00B97875 /* XCRemoteSwiftPackageReference "stripe-ios-spm" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/stripe/stripe-ios-spm";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 26.16.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		CC3D948230ABA10C00B97875 /* StripePaymentSheet */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = CC3D948030AB9E8E00B97875 /* XCRemoteSwiftPackageReference "stripe-ios-spm" */;
+			productName = StripePaymentSheet;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = C2A0E1000000000000000012 /* Project object */;
 }

@@ -1,3 +1,4 @@
+// Responsable del módulo de emergencia: Ayhan Ben Halima Martinez · A01647593
 //
 //  CamaraLlamada.swift
 //  Cámara REAL de la llamada de emergencia: se enciende solo si el operador la pide y la
@@ -10,7 +11,8 @@
 import AVFoundation
 import SwiftUI
 
-final class CamaraLlamada {
+/// Solo se usa desde la pantalla de la llamada; la sesión de captura se toca únicamente dentro de `cola`.
+final class CamaraLlamada: @unchecked Sendable {
     let sesion = AVCaptureSession()
     /// AVCaptureSession se configura y arranca fuera del hilo principal (Apple lo recomienda).
     private let cola = DispatchQueue(label: "CruzRoja.camaraLlamada")

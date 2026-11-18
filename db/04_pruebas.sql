@@ -541,6 +541,16 @@ BEGIN
           FROM (SELECT 'inscripcion_curso' AS tabla UNION ALL SELECT 'consentimiento'
                 UNION ALL SELECT 'bitacora') t
           CROSS JOIN (SELECT 'SELECT' AS permiso UNION ALL SELECT 'INSERT') p;
+        -- pagos con Stripe (08_pedidos.sql): el pedido se crea y se actualiza, nunca se borra;
+        -- los avisos de Stripe son de solo agregar. El 03 solo los da si esas tablas ya existen.
+        INSERT INTO zz_esperado
+        SELECT e.tabla, e.permiso
+          FROM (SELECT 'pedido' AS tabla, 'SELECT' AS permiso UNION ALL SELECT 'pedido', 'INSERT'
+                UNION ALL SELECT 'pedido', 'UPDATE' UNION ALL SELECT 'evento_stripe', 'SELECT'
+                UNION ALL SELECT 'evento_stripe', 'INSERT') e
+         WHERE EXISTS (SELECT 1 FROM information_schema.TABLES t
+                        WHERE t.table_schema = 'cruzroja'
+                          AND CONVERT(t.table_name USING utf8mb4) COLLATE utf8mb4_bin = e.tabla);
 
         -- Sin permisos globales (solo USAGE, que significa "puede conectarse") ni opción de dar permisos
         SELECT COUNT(*) INTO v_globales FROM information_schema.USER_PRIVILEGES

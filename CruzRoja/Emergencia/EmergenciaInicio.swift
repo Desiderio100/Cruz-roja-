@@ -1,6 +1,7 @@
+// Responsable del módulo de emergencia: Ayhan Ben Halima Martinez · A01647593
 //
 //  EmergenciaInicio.swift
-//  Botón de EMERGENCIA de la pantalla principal + lo que abre (a2):
+//  Botón de EMERGENCIA de la pantalla principal + lo que abre (Ayhan):
 //    • con servidor: la llamada (EmergencyCallView), con la delegación más cercana que elige el backend;
 //    • sin internet o si el servidor falla: el respaldo (RespaldoSinInternetView), con el centro más
 //      cercano de centros.json y tus coordenadas, para llamar por línea telefónica.
@@ -21,10 +22,8 @@ struct EmergenciaInicio: View {
 
     var body: some View {
         VStack(spacing: 12) {
-            // TEMPORAL: mientras el servidor no tenga delegaciones, siempre abre la llamada.
-            // Cuando las tenga, vuelve a usar: Task { await iniciarLlamada() }
             EmergenciaBoton(estaConectando: conectando) {
-                abierta = .llamada(Self.sesionTemporal)
+                Task { await iniciarLlamada() }
             }
 
             // TEMPORAL: para probar el respaldo telefónico. Se quitará después.
@@ -81,13 +80,6 @@ struct EmergenciaInicio: View {
             abierta = respaldo(punto)
         }
     }
-
-    /// TEMPORAL: llamada de muestra mientras el servidor no tenga delegaciones.
-    private static let sesionTemporal = EmergencySession(
-        id: UUID(),
-        status: "en_curso",
-        delegation: Delegation(id: 0, name: "Delegación más cercana", phone: Telefono.emergencias)
-    )
 
     private func respaldo(_ punto: CLLocationCoordinate2D?) -> PantallaEmergencia {
         let centro = punto.flatMap { Centro.masCercano(a: $0) }

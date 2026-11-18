@@ -1,16 +1,19 @@
 import Foundation
 
 /// Un curso de capacitación con su fecha, sede y cupo.
-struct Curso: Identifiable, Hashable {
+/// Es `Codable` para guardar en el teléfono la última lista descargada y verla sin internet.
+struct Curso: Identifiable, Hashable, Codable {
     let id: String
     let titulo: String
     let descripcion: String
     let fecha: Date
-    let duracion: String
+    /// "4 horas". `nil` cuando el servidor no la informa: entonces no se muestra.
+    let duracion: String?
     let sede: String
     let cupo: Int
     var inscritos: Int
-    let costo: Int?          // nil = gratuito
+    /// Costo en pesos. 0 = gratuito; `nil` = el servidor no lo informa y no se muestra.
+    let costo: Int?
 
     /// Lugares que quedan; nunca es negativo.
     var lugaresDisponibles: Int { max(0, cupo - inscritos) }
@@ -25,14 +28,19 @@ struct Curso: Identifiable, Hashable {
         }
     }
 
-    /// "$350 MXN" o "Gratuito".
-    var textoCosto: String { (costo ?? 0) > 0 ? "$\(costo!) MXN" : "Gratuito" }
+    /// "$350 MXN", "Gratuito" o `nil` si no se conoce el costo.
+    var textoCosto: String? {
+        guard let costo else { return nil }
+        return costo > 0 ? "$\(costo) MXN" : "Gratuito"
+    }
 
     var textoFecha: String { fecha.textoCurso }
 }
 
 extension Curso {
-    /// Cursos de prueba (fechas relativas a hoy para que siempre se vean "próximos").
+    /// Cursos de ejemplo (fechas relativas a hoy para que siempre se vean "próximos").
+    /// Solo los usan las vistas previas de Xcode y las pruebas unitarias (`CursosDeEjemplo`);
+    /// la app toma los cursos del backend.
     static let ejemplos: [Curso] = [
         Curso(id: "primeros-auxilios", titulo: "Primeros auxilios básicos",
               descripcion: "Valorar a una persona lesionada, controlar hemorragias, atender quemaduras y actuar mientras llega la ambulancia.",
@@ -49,7 +57,7 @@ extension Curso {
         Curso(id: "prevencion-hogar", titulo: "Prevención de accidentes en el hogar",
               descripcion: "Identificar riesgos en casa y armar un botiquín básico.",
               fecha: .enDias(12, hora: 18), duracion: "1 hora 30 min",
-              sede: "Cruz Roja Guadalupe", cupo: 40, inscritos: 15, costo: nil),
+              sede: "Cruz Roja Guadalupe", cupo: 40, inscritos: 15, costo: 0),
     ]
 }
 

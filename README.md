@@ -9,6 +9,8 @@ CruzRoja-Info.plist   permiso para hablar por http con el backend en tu red (sol
 Simulacion/           recorrido GPS de prueba por Monterrey (.gpx)
 backend/              API ÚNICA en Node: una ruta por pantalla (incluye el registro con SMS)
 db/                   scripts SQL de la base (ver db/LEEME.md)
+docs/                 diagramas de diseño y documentos de pruebas del sprint
+personal/             panel web del personal (llamadas y citas, entrada con matrícula), servidor aparte en el puerto 4000
 ```
 
 La app **nunca** se conecta a MySQL: habla con el backend (`/api/...`) y el backend habla con la base.
@@ -16,10 +18,10 @@ La app **nunca** se conecta a MySQL: habla con el backend (`/api/...`) y el back
 ## Abrir y correr
 
 **Solo la app** (sin servidor): doble clic en `CruzRoja.xcodeproj`, elige un iPhone del simulador y ⌘R.
-En *Crea tu cuenta* toca **Omitir por ahora** dos veces y entras. Centro más cercano, Capacitación
-y el respaldo de Emergencia funcionan sin servidor.
+En *Crea tu cuenta* toca **Omitir por ahora** dos veces y entras. Centro más cercano, la pestaña
+*Aprende* de Capacitación y el respaldo de Emergencia funcionan sin servidor.
 
-**Con todo** (registro con SMS, Emergencia, Agenda de citas, Productos con causa) necesitas además el backend corriendo en el mismo Mac:
+**Con todo** (registro con SMS, Emergencia, Agenda de citas, cursos de Capacitación, Productos con causa) necesitas además el backend corriendo en el mismo Mac:
 
 1. Node.js 20.6 o superior (`node -v` en Terminal).
 2. En Terminal (o en la terminal de VS Code):
@@ -49,6 +51,22 @@ Para un iPhone real: en `Configuracion.swift` cambia `localhost` por la IP de tu
 
 **Pruebas unitarias:** en Xcode, ⌘U corre el target `CruzRojaTests` (Swift Testing). No necesita internet ni el backend.
 
+**Pagos con Stripe:** para comprar de verdad en modo de prueba hace falta una cuenta de Stripe, llenar tres variables en `backend/.env`, correr `stripe listen` y agregar el paquete de Stripe en Xcode (una vez). Todo paso a paso en [`PAGOS_STRIPE.md`](PAGOS_STRIPE.md). Sin eso la app y el servidor funcionan igual; solo que *Comprar* avisa que la compra no está disponible por ahora y ofrece *Reintentar* (no manda a ningún otro sitio).
+
+**Sitio de administración de pedidos** (para el personal de Cruz Roja): el mismo servidor sirve una página web en `http://localhost:3000/admin/` donde cada persona entra con su usuario y contraseña, ve y filtra los pedidos, marca el envío y reembolsa por Stripe. Se enciende con `ADMIN_SESION_SECRETO` en `backend/.env`, las cuentas se crean con `npm run crear:personal` y la base necesita `db/09_pedidos_admin.sql`. Pasos y reglas en [`PAGOS_STRIPE.md`](PAGOS_STRIPE.md) (paso 8 y sección 3).
+
+**Panel del personal: llamadas y citas** (RF31 a RF33, carpeta `personal/`): otro sitio web, aparte, para el CECOM. El **operador** ve la llamada entrante de su delegación con la ficha (editable), la ubicación, la transcripción y las llamadas perdidas; el **administrativo** ve las citas del día por especialista y puede posponerlas. Se entra con **matrícula** (25 letras y números; en la base solo se guarda su huella SHA-256). Usa la misma base de datos y no comparte código ni sesión con el backend:
+
+```bash
+cd personal
+cp .env.example .env      # llena DB_USER / DB_PASSWORD (pueden ser los mismos de backend/.env) y SESION_SECRETO
+cp ../backend/ca.pem .    # el mismo certificado de Aiven
+npm install
+npm run dev               # http://localhost:4000/
+```
+
+Las dos entradas conviven sobre la misma tabla `personal`: las cuentas con matrícula entran al panel de llamadas y citas; las de usuario y contraseña, al sitio de pedidos. Con `PANEL_PERSONAL_URL=http://localhost:4000/` en `backend/.env`, el sitio de pedidos muestra un enlace al panel. Lo que el panel necesita en la base está en `db/10_modo_personal.sql` (en Aiven ya está).
+
 ## Cómo está organizado
 
 ```
@@ -71,18 +89,22 @@ CruzRoja/
 │   └── Telefono.swift          ← para hacer llamadas
 ├── Registro/                   ← HU01: Crea tu cuenta, verificación SMS, Permisos, Mi perfil
 ├── CentroCercano/              ← Centro más cercano (Desiderio)
-├── Capacitacion/               ← Capacitación: cursos + "Aprende" (Desiderio)
+├── Capacitacion/               ← Capacitación: cursos e inscripciones (con el backend) + "Aprende" (Desiderio)
 ├── Citas/                      ← Agenda de citas, Mis citas, Cancelar (Luis)
-├── Ventas/                     ← Productos con causa (Sebastián)
-└── Emergencia/                 ← Botón de emergencia, llamada y respaldo sin internet (a2)
+├── Ventas/                     ← Productos con causa + compra con pago en la app (Sebastián)
+└── Emergencia/                 ← Botón de emergencia, llamada y respaldo sin internet (Ayhan)
 backend/
 ├── src/server.js               ← crea el servidor y monta las rutas de cada pantalla
 ├── src/db.js                   ← UN pool de MySQL + llamar() para procedimientos (CALL ...)
 ├── src/errores.js              ← ErrorHttp y manejador único de errores
 ├── src/sms.js                  ← envío de SMS (consola, Twilio o app Mensajes)
-├── src/rutas/                  ← productos, citas, dispositivos, llamadas, registro, consentimientos
+├── src/stripe.js               ← configuración de Stripe (llaves del .env)
+├── src/admin/                  ← sitio de administración: inicio de sesión del personal y API (/admin/api)
+├── src/rutas/                  ← productos, pedidos, stripeWebhook, citas, cursos, dispositivos, llamadas, registro, consentimientos
+├── publico/admin/              ← el sitio de administración (HTML, CSS y JS; se abre en /admin/)
 ├── imagenes/                   ← fotos de productos (se sirven en /img/...)
-└── scripts/probar.js           ← `npm run probar`
+├── test/                       ← pruebas automáticas de pagos, administración, citas, cursos y transcripción (`npm run probar:todo`)
+└── scripts/                    ← `probar.js` (`npm run probar`) y `crear_personal.js` (`npm run crear:personal`)
 ```
 (el logo va en Assets.xcassets › LogoCruzRoja; si no hay imagen, se dibuja la cruz)
 
@@ -90,10 +112,10 @@ backend/
 |---|---|---|---|
 | Registro, SMS y permisos (HU01) | autor de HU01 | `Registro/` | `rutas/registro.js`, `rutas/consentimientos.js`, `sms.js` |
 | Centro más cercano (HU11) | Desiderio | `CentroCercano/` | No usa (lee `centros.json`) |
-| Capacitación (HU14) | Desiderio | `Capacitacion/` | No usa (cursos de ejemplo) |
+| Capacitación (HU14) | Desiderio | `Capacitacion/` | `rutas/cursos.js` (cursos e inscripciones); *Aprende* no usa servidor |
 | Agenda de citas | Luis | `Citas/` | `rutas/citas.js`, `rutas/dispositivos.js` |
-| Productos con causa | Sebastián | `Ventas/` | `rutas/productos.js` |
-| Emergencia y llamada | a2 | `Emergencia/` | `rutas/llamadas.js` |
+| Productos con causa, compra con Stripe y sitio de administración de pedidos | Sebastián | `Ventas/` | `rutas/productos.js`, `rutas/pedidos.js`, `rutas/stripeWebhook.js`, `stripe.js`, `admin/`, `publico/admin/` |
+| Emergencia y llamada | Ayhan Ben Halima Martinez · A01647593 | `Emergencia/` | `rutas/llamadas.js` |
 
 ## Agregar tu función
 
@@ -123,7 +145,7 @@ Tu pantalla **no** crea otro `NavigationStack` ni otro `@main`, y usa `.pantalla
    `app.use('/api/<tu-pantalla>', rutas<TuPantalla>(pool));`
 3. Usa el `pool` que recibes (no abras otra conexión). Para procedimientos almacenados: `llamar(pool, 'CALL ...', [..])` de `src/db.js`. Errores esperados: `throw new ErrorHttp(400, 'mensaje en español')` (ver `src/errores.js`).
 4. En la app, agrega tus llamadas en tu carpeta con `extension ClienteAPI { ... }` (como `Citas/ClienteAPI+Citas.swift`): ya trae el id del dispositivo y los mensajes de error.
-5. Si necesitas tablas o procedimientos nuevos, guárdalos como un script numerado en `db/` (p. ej. `07_...sql`) para que todos puedan reproducirlos.
+5. Si necesitas tablas o procedimientos nuevos, guárdalos como un script numerado en `db/` (p. ej. `13_...sql`; ya existen hasta el `12`) para que todos puedan reproducirlos.
 
 ## Estilo (todas las pantallas se ven igual)
 
@@ -195,12 +217,12 @@ Sin internet: la lista, los km, la flecha y la referencia siguen funcionando (so
 Para presentar: el interruptor **Simular recorrido por Monterrey** mueve tu ubicación poco a poco, como en carro. Para probar sin internet en el simulador, apaga el Wi-Fi de la Mac.
 
 **Capacitación**. Dos pestañas:
-- *Cursos*: **Mis inscripciones** (con folio) arriba y los próximos cursos con fecha y lugares. Inscripción con folio de confirmación (nombre y celular ya vienen llenos si te registraste); si está lleno no deja inscribirse. Cursos de ejemplo por ahora (`Curso.ejemplos`); el lugar para conectar el backend está marcado en `CapacitacionModelo.swift`.
+- *Cursos*: **Mis inscripciones** (con folio) arriba y los próximos cursos con fecha y lugares. Los cursos se descargan del backend (`GET /api/cursos`) al entrar y al jalar la lista hacia abajo. Inscripción con folio de confirmación (nombre y celular ya vienen llenos si te registraste): la app manda la inscripción a `POST /api/cursos/:id/inscripciones` y el **servidor** revisa el cupo dentro de una transacción, así dos personas no se quedan con el último lugar; si está lleno no deja inscribirse. La última lista descargada y las inscripciones se guardan en el teléfono para verlas sin internet. Para tener varios cursos de ejemplo (uno lleno) corre `db/11_cursos_demo.sql`.
 - *Aprende*: lo básico que todos deberíamos saber (pedir ayuda, RCP, atragantamiento, hemorragias, posición lateral, quemaduras) con los pasos siempre abiertos y un video de YouTube por tema. Para cambiar un video, edita `videoID` en `Tema.swift`.
 
 | Capacitación | Con internet | Sin internet |
 |---|---|---|
-| Ver cursos | Sí | Sí, con aviso "los lugares pueden haber cambiado" |
+| Ver cursos | Sí, descargados del backend | Sí, la última lista guardada, con aviso "los lugares pueden haber cambiado" |
 | Inscribirse | Sí | No, botón apagado (el cupo vive en el servidor) |
 | Mis inscripciones | Sí | Sí, guardadas en el teléfono |
 | Pasos de Aprende | Sí | Sí, texto dentro de la app |
@@ -208,9 +230,9 @@ Para presentar: el interruptor **Simular recorrido por Monterrey** mueve tu ubic
 
 **Agenda de citas**: nutrición y psicología: elegir día y horario libre, confirmar, ver *Mis citas*, cancelar y elegir nuevo horario cuando una cita queda pospuesta. Si la persona no se registró, la primera vez pide nombre y teléfono. Cada ruta del backend llama a un procedimiento almacenado de la base. Una cita solo la ve y la modifica el dispositivo que la creó (header `X-Dispositivo-Id`). Necesita internet y el backend.
 
-**Productos con causa**: catálogo desde la tabla `producto` (solo activos, solo enlaces `https`), con foto. *Comprar* abre el canal oficial de Cruz Roja en el navegador; la app no procesa pagos. Necesita internet y el backend.
+**Productos con causa**: catálogo desde la tabla `producto` (solo activos, solo enlaces `https`), con foto. *Comprar* abre la hoja de compra: cantidad, datos de envío a domicilio, total (producto + envío) y pago con tarjeta en la hoja de Stripe; al terminar muestra un folio (`PC-000012`). El precio lo calcula el servidor y el pedido solo pasa a «pagado» cuando Stripe avisa por el webhook; la app no guarda datos de tarjeta. Si los pagos no están activos (sin llaves de Stripe o sin el paquete en Xcode) avisa que la compra no está disponible por ahora y ofrece *Reintentar*; ya no redirige a ningún sitio externo. Los pedidos los administra el personal en el sitio `/admin/` del backend (ver más arriba). Necesita internet y el backend. **Cómo activarlo, probarlo y qué decidir con Cruz Roja: [`PAGOS_STRIPE.md`](PAGOS_STRIPE.md).**
 
-**Emergencia**: el botón rojo de la pantalla principal toma tu ubicación (`Ubicacion`), la manda al backend y este elige la delegación activa más cercana (función `distancia_km` de la base), crea la llamada y su ficha, y la app abre la pantalla de llamada. Si hay nombre y teléfono guardados (`Perfil`), también se envían. **La pantalla de llamada todavía es maqueta**: registra la llamada en la base, pero no hay audio ni video reales.
+**Emergencia**: el botón rojo de la pantalla principal toma tu ubicación (`Ubicacion`), la manda al backend y este elige la delegación activa más cercana (función `distancia_km` de la base), crea la llamada y su ficha, y la app abre la pantalla de llamada. Si hay nombre y teléfono guardados (`Perfil`), también se envían. Durante la llamada, lo que dice la persona se convierte en texto **en el iPhone** (framework Speech, `Emergencia/TranscriptorLlamada.swift`) y cada frase se manda al panel del operador (`POST /api/llamadas/:id/transcripcion`); al servidor solo llega texto, nunca audio. Si el iPhone no puede transcribir sin mandar el audio fuera del teléfono, o la persona niega el permiso, la llamada sigue igual y el operador llena la ficha a mano. Silenciar el micrófono también pausa la transcripción. El audio y el video hacia el operador todavía no existen: la cámara solo se ve en el teléfono.
 
 **Respaldo sin internet**: si no hay internet, el servidor no responde o la ubicación está negada, el botón de Emergencia abre *Llamada por teléfono*: el centro más cercano (de `centros.json`, dentro de la app), su número y tus coordenadas GPS para dictárselas al operador. Mientras `Configuracion.directorioDePrueba` sea `true`, el botón **Llamar no marca** (los números son inventados).
 
@@ -244,9 +266,12 @@ Luego abre el pull request en GitHub y, cuando el equipo lo revise, se une a `ma
 
 ## Pendientes conocidos
 
-- Las rutinas SQL de citas y dispositivos (`dispositivo_registrar`, `citas_del_dispositivo`, `cita_agendar`, `cita_cancelar`, `cita_reprogramar`) existen en Aiven pero **no** están en `db/`. Luis debe exportarlas a `db/07_citas_rutinas.sql`.
+- Las rutinas SQL de citas y dispositivos (`dispositivo_registrar`, `citas_del_dispositivo`, `cita_agendar`, `cita_cancelar`, `cita_reprogramar`) ya están en `db/07_citas_rutinas.sql`, escritas a partir de lo que la API manda y la app lee. No reemplazan las de Aiven (`CREATE PROCEDURE IF NOT EXISTS`). Falta que Luis las compare con las de Aiven (`SHOW CREATE PROCEDURE cita_agendar;`) y, si hay diferencias, deje en el archivo la versión de Aiven.
+- Capacitación: la tabla `curso` no guarda duración ni costo, así que la app no los muestra en los cursos del servidor. Si Cruz Roja los necesita, hay que agregar esas columnas y mandarlas en `GET /api/cursos`. Todavía no se puede cancelar una inscripción desde la app.
 - Los centros viven en dos lugares: `centros.json` (app) y la tabla `delegacion` (base). Citas usa una delegación fija (`Configuracion.delegacionId`) y Emergencia elige la más cercana en el servidor. Falta el endpoint de delegaciones para que la app use la misma fuente.
+- Transcripción (HU09): ya llega el texto al panel del operador, pero la ficha todavía no se llena sola a partir de ese texto (extraer nombre, motivo, lesionados, etc.). En el simulador se usa el reconocimiento de Apple por internet porque no trae el modelo en el teléfono; la prueba completa es en un iPhone real.
 - Emergencia: nadie la protege contra llamadas falsas (solo el límite de 60 peticiones por minuto por IP). Es una decisión de seguridad pendiente.
 - Registro: los códigos SMS viven en la memoria del servidor (si se reinicia, hay que pedir otro). Con Twilio de prueba no llegan SMS a celulares de México.
 - Las fotos de productos se sirven por `http://localhost` (solo desarrollo): en producción deben estar en una dirección `https://`.
+- Pagos con Stripe: solo probados en modo de prueba. Falta definir con Cruz Roja el costo de envío (`ENVIO_MXN`), quién del personal atiende los pedidos y quién puede reembolsar, el aviso de privacidad con el domicilio y la cuenta de Stripe de la institución para cobrar de verdad. El sitio de administración solo hace reembolsos totales, los pedidos no se separan por delegación y las cuentas del personal se crean desde la terminal; en producción exige HTTPS. Ver `PAGOS_STRIPE.md` secciones 7 y 8.
 - `Configuracion.urlDonar` apunta al sitio general de Cruz Roja Mexicana; cambiarlo por la página de donativos que indique el socio formador.

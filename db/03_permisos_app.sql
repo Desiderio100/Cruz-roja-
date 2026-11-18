@@ -133,6 +133,31 @@ GRANT SELECT, INSERT ON cruzroja.inscripcion_curso TO 'cruzroja_app'@'%';
 GRANT SELECT, INSERT ON cruzroja.consentimiento    TO 'cruzroja_app'@'%';
 GRANT SELECT, INSERT ON cruzroja.bitacora          TO 'cruzroja_app'@'%';
 
+-- 4b. Pedidos y pagos con Stripe (08_pedidos.sql). Solo si ya corriste el 08: si las tablas
+--     todavía no existen, este bloque no hace nada (y la próxima vez que corras el 03 las toma).
+--     El pedido se crea y se actualiza (pendiente > pagado), pero nunca se borra. Los avisos
+--     de Stripe son de solo agregar.
+DROP PROCEDURE IF EXISTS zz_permisos_pedidos;
+
+DELIMITER //
+
+CREATE PROCEDURE zz_permisos_pedidos()
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.TABLES
+                WHERE table_schema = 'cruzroja' AND table_name = 'pedido') THEN
+        GRANT SELECT, INSERT, UPDATE ON cruzroja.pedido TO 'cruzroja_app'@'%';
+    END IF;
+    IF EXISTS (SELECT 1 FROM information_schema.TABLES
+                WHERE table_schema = 'cruzroja' AND table_name = 'evento_stripe') THEN
+        GRANT SELECT, INSERT ON cruzroja.evento_stripe TO 'cruzroja_app'@'%';
+    END IF;
+END//
+
+DELIMITER ;
+
+CALL zz_permisos_pedidos();
+DROP PROCEDURE zz_permisos_pedidos;
+
 -- 5. Puede llamar las funciones y procedimientos de la base (CALL horarios_disponibles(...),
 --    CALL personal_login_fallido(...), etc.). No puede crearlos ni cambiarlos.
 GRANT EXECUTE ON cruzroja.* TO 'cruzroja_app'@'%';

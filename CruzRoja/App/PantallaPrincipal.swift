@@ -79,6 +79,6 @@ private struct AccesoRapido: View {
         .environment(SesionUsuario())
         .environment(GestorPermisos())
         .environment(Ubicacion())
-        .environment(CapacitacionModelo())
+        .environment(CapacitacionModelo(repositorio: CursosDeEjemplo()))
         .environment(Internet())
 }

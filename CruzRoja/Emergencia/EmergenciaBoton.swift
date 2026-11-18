@@ -1,6 +1,7 @@
+// Responsable del módulo de emergencia: Ayhan Ben Halima Martinez · A01647593
 //
 //  EmergenciaBoton.swift
-//  Botón rojo de EMERGENCIA (diseño de a2). Lo usa EmergenciaInicio.
+//  Botón rojo de EMERGENCIA (diseño de Ayhan). Lo usa EmergenciaInicio.
 //
 //  Al tocarlo cuenta 3 segundos antes de llamar, para evitar llamadas sin querer.
 //  Si se toca otra vez durante la cuenta, se cancela.

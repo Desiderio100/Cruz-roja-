@@ -9,9 +9,15 @@ Scripts para crear la base `cruzroja` en Aiven (MySQL 8.4) y, más adelante, en 
 | 3 | `03_permisos_app.sql` | Deja a `cruzroja_app` con los permisos mínimos y muestra la lista al final |
 | 4 | `04_pruebas.sql` | 17 pruebas + una comprobación final. No deja datos |
 | 5 (opcional) | `05_usuarios_desarrollo.sql` | Da permisos de desarrollo (crear y cambiar tablas) a los compañeros del equipo |
+| 7 | `07_citas_rutinas.sql` | Rutinas que usa la API para dispositivos y citas (`dispositivo_registrar`, `citas_del_dispositivo`, `cita_agendar`, `cita_cancelar`, `cita_reprogramar`). Sin ellas, en una base nueva `POST /api/dispositivos` y `/api/citas` responden error 500. En Aiven no cambia nada (usa `CREATE PROCEDURE IF NOT EXISTS`). Se puede repetir. Necesita MySQL 8.0.29 o superior |
 | 6 (opcional) | `06_agregar_productos.sql` | Plantilla para agregar productos al catálogo "Productos con causa". Se puede repetir; cada corrida agrega lo que escribas |
+| 8 | `08_pedidos.sql` | Pagos con Stripe: tablas `pedido` y `evento_stripe`. Se puede repetir. **Después corre otra vez el `03`** para darle permisos a `cruzroja_app` sobre las tablas nuevas |
+| 9 | `09_pedidos_admin.sql` | Sitio de administración de pedidos: agrega a `pedido` el estado de envío, la guía y el reembolso (columnas, reglas e índice). Corre **después del `08`**. Se puede repetir: si ya está aplicado, no hace nada. No cambia permisos, así que no hace falta volver a correr el `03`. Las cuentas del personal se crean con `npm run crear:personal` (en `backend/`) |
+| 10 | `10_modo_personal.sql` | Panel del personal (llamadas y citas, carpeta `personal/`): entrada con matrícula en `personal`, tablas `intento_acceso` y `transcripcion`, y los 11 procedimientos del panel. Es copia exacta de lo que **ya está en Aiven**: ahí no hace falta correrlo (si lo corres no pasa nada). Sirve para una base nueva. Se puede repetir y no cambia permisos |
+| 11 (opcional) | `11_cursos_demo.sql` | Cursos ficticios para mostrar Capacitación en la app (tres con lugares y uno lleno). Se puede repetir: no duplica y vuelve a poner como próximos los que ya pasaron |
+| 12 | `12_transcripcion_app.sql` | Transcripción de la llamada (HU09): procedimiento `transcripcion_agregar`, que usa la API para guardar las frases que transcribe el iPhone en la tabla `transcripcion` (la crea el `10`). Corre **después del `10`**. Se puede repetir y no cambia permisos (`cruzroja_app` ya puede ejecutar procedimientos) |
 | – | `99_borrar_todo_SOLO_DESARROLLO.sql` | Borra la base completa. Solo para volver a empezar |
-| – | `diagrama/er.py`, `diagrama/er.png` | Diagrama entidad-relación y el programa que lo dibuja |
+| – | `diagrama/er.py`, `diagrama/er.png` | Diagrama entidad-relación y el programa que lo dibuja a partir de estos scripts (`python3 diagrama/er.py`; necesita Graphviz) |
 
 ## Antes de empezar
 
@@ -28,6 +34,7 @@ Scripts para crear la base `cruzroja` en Aiven (MySQL 8.4) y, más adelante, en 
 Qué esperar en cada uno:
 
 - **01**: todo verde. En Schemas aparecen 17 tablas, 4 vistas y 8 rutinas (procedimientos y funciones).
+- **07**: al final aparece una tabla con las cinco rutinas de dispositivos y citas.
 - **02**: todo verde.
 - **03**: al final se abre una tabla "Grants for cruzroja_app@%". Debe empezar con `GRANT USAGE ON *.*` y tener solo líneas de `` `cruzroja`.`...` `` y `GRANT EXECUTE ON `cruzroja`.*`. **No** debe aparecer `WITH GRANT OPTION`, `DELETE`, ni nada sobre otras bases.
 - **04**: al final se abre una tabla con una fila por prueba. Todas deben decir `OK` y la última fila (99) debe decir `TODO BIEN`. Si una dice `FALLÓ`, la columna `detalle` explica por qué.
@@ -74,8 +81,8 @@ Pueden crear, cambiar y borrar **tablas e índices** y editar datos. No pueden c
 - Guarda las fechas y horas en UTC (`DATETIME(3)`) y conviértelas a hora local al mostrarlas.
 - No cambies el `sql_mode` de tu conexión (debe seguir en modo estricto).
 - Los ids son UUID versión 4 (`CHAR(36)`). Genera el tuyo y pásalo en el INSERT cuando necesites conocerlo al instante.
-- Usa `CALL` para los procedimientos: `delegacion_mas_cercana`, `horarios_disponibles`, `personal_login_fallido`, `personal_login_exitoso`.
+- Usa `CALL` para los procedimientos: `delegacion_mas_cercana`, `horarios_disponibles`, `personal_login_fallido`, `personal_login_exitoso`, los de citas del `07` y `transcripcion_agregar` del `12`.
 
 ## Migrar a la máquina virtual
 
-Ver la sección 8 del PDF de diseño (`Diseno_backend_ciberseguridad_Cruz_Roja_v2_MySQL.pdf`). Resumen: confirma la versión de MySQL o MariaDB de la VM, saca un `mysqldump --routines --triggers --events --single-transaction --set-gtid-purged=OFF --ssl-ca=ca.pem`, quita los `DEFINER=avnadmin@%` o crea ese usuario allá, crea `cruzroja_app` con tu contraseña y corre `03` y `04`.
+Ver la sección 8 del PDF de diseño (`Diseno_backend_ciberseguridad_Cruz_Roja_v2_MySQL.pdf`). El orden para crear la base desde cero en la VM (sin copiar datos) es `01`, `02`, `07`, `08`, `03`, `09`, `10`, `12` y al final `04`; el `11` es opcional. El `04` necesita los datos del `02`: en una base real, donde no se cargan el `02` ni el `11`, el `04` no se corre. Para llevarte también los datos de Aiven: confirma la versión de MySQL o MariaDB de la VM, saca un `mysqldump --routines --triggers --events --single-transaction --set-gtid-purged=OFF --ssl-ca=ca.pem`, quita los `DEFINER=avnadmin@%` o crea ese usuario allá, crea `cruzroja_app` con tu contraseña y corre `03` y `04`.

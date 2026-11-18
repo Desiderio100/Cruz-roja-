@@ -1,12 +1,17 @@
 import { randomUUID } from 'node:crypto';
 import { Router } from 'express';
 import { z } from 'zod';
+import { llamar } from '../db.js';
 import { ErrorHttp } from '../errores.js';
 
 /**
- * Botón de EMERGENCIA y llamada.   Dueño: a2 (autor del commit original)
+ * Botón de EMERGENCIA y llamada.   Responsable: Ayhan Ben Halima Martinez · A01647593
  *   POST  /api/llamadas        crea la llamada, elige la delegación activa más cercana y crea su ficha
  *   PATCH /api/llamadas/:id    actualiza el estado o la autorización de video (solo el dispositivo dueño)
+ *   POST  /api/llamadas/:id/transcripcion   guarda las frases que el teléfono transcribió (RF12, HU09)
+ *
+ * La transcripción se hace en el iPhone (Emergencia/TranscriptorLlamada.swift): aquí solo llega texto,
+ * nunca audio. El panel del operador la lee de la tabla transcripcion (carpeta personal/).
  *
  * Los campos del cuerpo van en inglés/camelCase porque así los manda la app (Emergencia/EmergencyAPI.swift).
  */
@@ -28,6 +33,17 @@ const actualizarLlamada = z.object({
   videoAccepted: z.boolean().optional(),
 }).refine((body) => body.status !== undefined || body.videoAccepted !== undefined, {
   message: 'Se necesita al menos un cambio',
+});
+
+// Sin caracteres de control: el texto se muestra tal cual en el panel del operador.
+const SIN_CONTROL = /^[^\u0000-\u001F\u007F]*$/;
+
+const agregarTranscripcion = z.object({
+  deviceId: idDispositivo,
+  lines: z.array(z.object({
+    text: z.string().trim().min(1).max(1000).regex(SIN_CONTROL),
+    second: z.number().int().min(0).max(86_400),   // segundos desde que empezó la llamada
+  })).min(1).max(20),
 });
 
 export function rutasLlamadas(pool) {
@@ -129,6 +145,32 @@ export function rutasLlamadas(pool) {
     );
     if (resultado.affectedRows === 0) throw new ErrorHttp(404, 'la llamada no existe');
     res.status(204).end();
+  });
+
+  // Frases que el teléfono transcribió durante la llamada. Las líneas de un envío se guardan
+  // todas o ninguna, para que el teléfono pueda reenviar el grupo completo si hubo un error.
+  router.post('/:id/transcripcion', async (req, res) => {
+    const id = z.string().uuid().safeParse(req.params.id);
+    const cuerpo = agregarTranscripcion.safeParse(req.body);
+    if (!id.success || !cuerpo.success) throw new ErrorHttp(400, 'datos no válidos');
+
+    const conexion = await pool.getConnection();
+    try {
+      await conexion.beginTransaction();
+      // El procedimiento revisa que la llamada sea de este dispositivo y siga abierta.
+      for (const linea of cuerpo.data.lines) {
+        await llamar(conexion, 'CALL transcripcion_agregar(?, ?, ?, ?)', [
+          id.data.toLowerCase(), cuerpo.data.deviceId, linea.text, linea.second,
+        ]);
+      }
+      await conexion.commit();
+      res.status(201).json({ saved: cuerpo.data.lines.length });
+    } catch (error) {
+      await conexion.rollback().catch(() => {});
+      throw error;
+    } finally {
+      conexion.release();
+    }
   });
 
   return router;

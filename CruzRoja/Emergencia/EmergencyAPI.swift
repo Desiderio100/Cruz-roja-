@@ -1,10 +1,12 @@
+// Responsable del módulo de emergencia: Ayhan Ben Halima Martinez · A01647593
 //
 //  EmergencyAPI.swift
 //  Llamadas de emergencia contra el backend:
 //      POST  {apiBaseURL}/api/llamadas        crea la llamada y devuelve la delegación más cercana
 //      PATCH {apiBaseURL}/api/llamadas/{id}   estado (finalizada…) y autorización de video
+//      POST  {apiBaseURL}/api/llamadas/{id}/transcripcion   frases transcritas en el teléfono (RF12)
 //
-//  Cambios respecto a la versión original de a2:
+//  Cambios respecto a la versión original de Ayhan:
 //   • La ubicación ya no se pide aquí: la entrega la app (Comun/Ubicacion.swift, una sola
 //     para todo el equipo) y llega como parámetro.
 //   • El id del dispositivo es el MISMO que usa Citas (Comun/Dispositivo.swift, guardado en
@@ -33,6 +35,8 @@ enum EmergencyAPIError: LocalizedError {
     case locationUnavailable
     /// No se pudo hablar con el servidor (sin internet o backend apagado): se usa el respaldo.
     case sinConexion
+    /// El servidor ya no acepta cambios de esta llamada (terminó o no es de este teléfono).
+    case callClosed
     case server(String)
 
     var errorDescription: String? {
@@ -45,6 +49,8 @@ enum EmergencyAPIError: LocalizedError {
             "No fue posible obtener tu ubicación. Inténtalo nuevamente."
         case .sinConexion:
             "No hay conexión con el servidor."
+        case .callClosed:
+            "La llamada ya terminó."
         case .server(let message):
             message
         }
@@ -108,6 +114,27 @@ struct EmergencyAPI {
         try validate(response: response, data: data)
     }
 
+    /// Manda al panel del operador las frases que el teléfono transcribió (solo texto, nunca audio).
+    /// - Throws: `EmergencyAPIError.callClosed` si la llamada ya terminó en el servidor.
+    func sendTranscript(id: UUID, lines: [LineaTranscrita]) async throws {
+        let payload = TranscriptRequest(
+            deviceId: try await deviceId(),
+            lines: lines.map { TranscriptLine(text: $0.texto, second: $0.segundo) }
+        )
+        let path = "api/llamadas/\(id.uuidString.lowercased())/transcripcion"
+        var request = URLRequest(url: baseURL.appending(path: path))
+        request.httpMethod = "POST"
+        request.timeoutInterval = 15
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONEncoder().encode(payload)
+
+        let (data, response) = try await send(request)
+        if (response as? HTTPURLResponse)?.statusCode == 404 {
+            throw EmergencyAPIError.callClosed
+        }
+        try validate(response: response, data: data)
+    }
+
     /// Id del dispositivo, el mismo que usa Citas (se registra una sola vez en el servidor).
     private func deviceId() async throws -> String {
         try await Dispositivo.compartido.id().lowercased()
@@ -146,6 +173,18 @@ private struct UpdateCallRequest: Encodable {
     let deviceId: String
     let status: String?
     let videoAccepted: Bool?
+}
+
+/// Cuerpo de POST /api/llamadas/{id}/transcripcion. No es `private` para que las pruebas
+/// comprueben que tiene el formato que espera el servidor.
+struct TranscriptRequest: Encodable, Equatable {
+    let deviceId: String
+    let lines: [TranscriptLine]
+}
+
+struct TranscriptLine: Encodable, Equatable {
+    let text: String
+    let second: Int
 }
 
 private struct APIErrorResponse: Decodable {

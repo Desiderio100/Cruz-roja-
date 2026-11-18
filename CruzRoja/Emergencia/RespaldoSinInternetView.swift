@@ -1,3 +1,4 @@
+// Responsable del módulo de emergencia: Ayhan Ben Halima Martinez · A01647593
 //
 //  RespaldoSinInternetView.swift
 //  Respaldo de EMERGENCIA cuando no hay internet o el servidor no responde (maqueta
