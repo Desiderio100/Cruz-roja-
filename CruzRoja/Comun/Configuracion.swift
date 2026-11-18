@@ -16,9 +16,11 @@ enum Configuracion {
         // Simulador: el backend corre en tu Mac.
         return URL(string: "http://localhost:3000")!
         #elseif DEBUG
+        // "My Mac (Designed for iPhone)": la app corre en la misma Mac que el backend.
+        if ProcessInfo.processInfo.isiOSAppOnMac { return URL(string: "http://localhost:3000")! }
         // iPhone real: la IP de la Mac donde corre el backend (misma red Wi‑Fi).
         // Cambia cada vez que la Mac se conecta a otra red: actualízala aquí.
-        return URL(string: "http://10.22.160.207:3000")!
+        return URL(string: "http://192.168.1.21:3000")!
         #else
         // Producción: cambia por el dominio real del backend. Siempre https.
         return URL(string: "https://api.tu-dominio.com")!
@@ -36,8 +38,9 @@ enum Configuracion {
     /// Cambiar por la página exacta de donativos que nos dé el socio formador.
     static let urlDonar = URL(string: "https://www.cruzrojamexicana.org.mx")!
 
-    /// true mientras centros.json tenga teléfonos INVENTADOS: el respaldo sin internet de
-    /// Emergencia muestra el número pero NO lo marca (podría ser el número de alguien real).
-    /// Pásalo a false solo cuando centros.json tenga el directorio oficial.
+    /// true mientras el directorio de delegaciones (tabla `delegacion`) tenga teléfonos INVENTADOS:
+    /// el respaldo sin internet de Emergencia y "Tu delegación" muestran el número pero NO lo
+    /// marcan (podría ser el número de alguien real).
+    /// Pásalo a false solo cuando la base tenga el directorio oficial.
     static let directorioDePrueba = true
 }

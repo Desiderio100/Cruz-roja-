@@ -1,0 +1,134 @@
+{
+  "nota": "Copia del directorio que va dentro de la app (GET /api/delegaciones, versión 15). Solo se usa si el teléfono nunca ha podido bajar el directorio. Son DATOS DE PRUEBA (db/02_datos_prueba.sql y db/12_cursos_y_centros.sql): al cargar el directorio oficial en la base, vuelve a generar este archivo.",
+  "version": 15,
+  "delegaciones": [
+    {
+      "id": 13,
+      "nombre": "Cruz Roja Apodaca",
+      "telefono": "+528112345606",
+      "latitud": 25.7817,
+      "longitud": -100.188,
+      "estado": "Nuevo León",
+      "direccion": "Apodaca, N.L.",
+      "referencia": "Sobre Av. Miguel Alemán, a la altura del centro de Apodaca"
+    },
+    {
+      "id": 1,
+      "nombre": "Cruz Roja Centro (prueba)",
+      "telefono": "+525500000001",
+      "latitud": 19.4326,
+      "longitud": -99.1332,
+      "estado": "Ciudad de México"
+    },
+    {
+      "id": 14,
+      "nombre": "Cruz Roja Escobedo",
+      "telefono": "+528112345607",
+      "latitud": 25.799,
+      "longitud": -100.324,
+      "estado": "Nuevo León",
+      "direccion": "General Escobedo, N.L.",
+      "referencia": "Sobre Av. Raúl Salinas, cerca de la presidencia municipal"
+    },
+    {
+      "id": 3,
+      "nombre": "Cruz Roja Guadalajara (prueba)",
+      "telefono": "+523300000003",
+      "latitud": 20.6597,
+      "longitud": -103.3496,
+      "estado": "Jalisco"
+    },
+    {
+      "id": 10,
+      "nombre": "Cruz Roja Guadalupe",
+      "telefono": "+528112345603",
+      "latitud": 25.6767,
+      "longitud": -100.2565,
+      "estado": "Nuevo León",
+      "direccion": "Guadalupe, N.L.",
+      "referencia": "Sobre Av. Benito Juárez, frente a la plaza principal"
+    },
+    {
+      "id": 5,
+      "nombre": "Cruz Roja Mérida (prueba)",
+      "telefono": "+529900000005",
+      "latitud": 20.9674,
+      "longitud": -89.5926,
+      "estado": "Yucatán"
+    },
+    {
+      "id": 2,
+      "nombre": "Cruz Roja Monterrey (prueba)",
+      "telefono": "+528100000002",
+      "latitud": 25.6866,
+      "longitud": -100.3161,
+      "estado": "Nuevo León"
+    },
+    {
+      "id": 7,
+      "nombre": "Cruz Roja Monterrey Centro",
+      "telefono": "+528112345600",
+      "latitud": 25.6714,
+      "longitud": -100.309,
+      "estado": "Nuevo León",
+      "direccion": "Centro de Monterrey, N.L.",
+      "referencia": "Sobre Av. Constitución, a dos cuadras de la Macroplaza"
+    },
+    {
+      "id": 8,
+      "nombre": "Cruz Roja Monterrey Sur",
+      "telefono": "+528112345601",
+      "latitud": 25.637,
+      "longitud": -100.285,
+      "estado": "Nuevo León",
+      "direccion": "Zona Tec / Contry, N.L.",
+      "referencia": "Sobre Av. Eugenio Garza Sada, pasando el Tec"
+    },
+    {
+      "id": 4,
+      "nombre": "Cruz Roja Puebla (prueba)",
+      "telefono": "+522200000004",
+      "latitud": 19.0414,
+      "longitud": -98.2063,
+      "estado": "Puebla"
+    },
+    {
+      "id": 9,
+      "nombre": "Cruz Roja San Nicolás",
+      "telefono": "+528112345602",
+      "latitud": 25.7417,
+      "longitud": -100.302,
+      "estado": "Nuevo León",
+      "direccion": "San Nicolás de los Garza, N.L.",
+      "referencia": "Sobre Av. Universidad, cerca de Av. Juárez"
+    },
+    {
+      "id": 11,
+      "nombre": "Cruz Roja San Pedro",
+      "telefono": "+528112345604",
+      "latitud": 25.6573,
+      "longitud": -100.4023,
+      "estado": "Nuevo León",
+      "direccion": "San Pedro Garza García, N.L.",
+      "referencia": "Sobre Av. Vasconcelos, cerca de Calzada San Pedro"
+    },
+    {
+      "id": 12,
+      "nombre": "Cruz Roja Santa Catarina",
+      "telefono": "+528112345605",
+      "latitud": 25.6733,
+      "longitud": -100.458,
+      "estado": "Nuevo León",
+      "direccion": "Santa Catarina, N.L.",
+      "referencia": "Sobre Av. Manuel Ordóñez, cerca del centro"
+    },
+    {
+      "id": 6,
+      "nombre": "Cruz Roja Tijuana (prueba)",
+      "telefono": "+526600000006",
+      "latitud": 32.5149,
+      "longitud": -117.0382,
+      "estado": "Baja California"
+    }
+  ]
+}

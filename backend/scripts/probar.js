@@ -15,6 +15,8 @@ const pruebas = [
   ['Servidor y base de datos', '/salud', (j) => j.ok === true, () => ''],
   ['Pantalla 6 · Productos con causa', '/api/productos', (j) => Array.isArray(j.productos),
     (j) => `${j.productos.length} productos`],
+  ['Pantalla 6 · Condiciones de compra', '/api/pedidos/condiciones', (j) => typeof j.envio_mxn === 'number',
+    (j) => `envío $${j.envio_mxn} MXN, pagos ${j.disponible ? 'activos' : 'apagados'}`],
   ['Pantalla 5 · Horarios de citas',
     `/api/citas/horarios?delegacion_id=2&servicio=nutricion&fecha=${fecha}&zona=${encodeURIComponent(zona)}`,
     (j) => Array.isArray(j), (j) => `${j.length} horarios el ${fecha}`],

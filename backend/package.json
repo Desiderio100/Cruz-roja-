@@ -7,16 +7,25 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --env-file=.env --watch src/server.js",
-    "probar": "node scripts/probar.js"
+    "probar": "node scripts/probar.js",
+    "probar:pagos": "node --env-file=.env.local --test test/pagos.test.js",
+    "crear:personal": "node scripts/crear_personal.js",
+    "db:correr": "node --env-file=.env scripts/correr_sql.js",
+    "sms:revisar": "node --env-file=.env scripts/revisar_twilio.js",
+    "probar:admin": "node --env-file=.env.local --test test/admin.test.js",
+    "probar:todo": "node --env-file=.env.local --test"
   },
   "engines": {
     "node": ">=20.6"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.3",
     "express": "^5.3.0",
     "express-rate-limit": "^8.7.1",
     "helmet": "^8.3.0",
+    "livekit-server-sdk": "2.19.2",
     "mysql2": "^3.24.6",
+    "stripe": "^23.0.1",
     "zod": "^3.24.2"
   }
 }

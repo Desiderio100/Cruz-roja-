@@ -2,11 +2,15 @@ import { randomUUID } from 'node:crypto';
 import { Router } from 'express';
 import { z } from 'zod';
 import { ErrorHttp } from '../errores.js';
+import { tokenDeTelefono } from '../livekit.js';
 
 /**
  * Botón de EMERGENCIA y llamada.   Responsable: Ayhan Ben Halima Martinez · A01647593
  *   POST  /api/llamadas        crea la llamada, elige la delegación activa más cercana y crea su ficha
  *   PATCH /api/llamadas/:id    actualiza el estado o la autorización de video (solo el dispositivo dueño)
+ *   POST  /api/llamadas/:id/sala           token para entrar a la sala de audio y video de la llamada
+ *   POST  /api/llamadas/:id/transcripcion  líneas que la app transcribe en el teléfono
+ *   PUT   /api/llamadas/:id/ficha          campos de la ficha que la IA del teléfono extrajo
  *
  * Los campos del cuerpo van en inglés/camelCase porque así los manda la app (Emergencia/EmergencyAPI.swift).
  */
@@ -29,6 +33,36 @@ const actualizarLlamada = z.object({
 }).refine((body) => body.status !== undefined || body.videoAccepted !== undefined, {
   message: 'Se necesita al menos un cambio',
 });
+
+const entrarASala = z.object({ deviceId: idDispositivo });
+
+const lineasTranscripcion = z.object({
+  deviceId: idDispositivo,
+  lineas: z.array(z.object({
+    texto: z.string().trim().min(1).max(1000),
+    momentoSeg: z.number().int().min(0).max(86400),
+  })).min(1).max(20),
+});
+
+const textoCorto = (maximo) => z.string().trim().max(maximo).optional();
+
+const camposIa = z.object({
+  deviceId: idDispositivo,
+  motivo: textoCorto(500),
+  numLesionados: z.number().int().min(0).max(32767).optional(),
+  lesionPrincipal: textoCorto(200),
+  lugar: textoCorto(300),
+  comentarios: textoCorto(2000),
+});
+
+async function llamadaDelDispositivo(pool, idLlamada, idDispositivoDueno) {
+  const [filas] = await pool.execute(
+    'SELECT id, estado FROM llamada WHERE id = ? AND dispositivo_id = ?',
+    [idLlamada, idDispositivoDueno]
+  );
+  if (filas.length === 0) throw new ErrorHttp(404, 'la llamada no existe');
+  return filas[0];
+}
 
 export function rutasLlamadas(pool) {
   const router = Router();
@@ -128,6 +162,51 @@ export function rutasLlamadas(pool) {
       valores
     );
     if (resultado.affectedRows === 0) throw new ErrorHttp(404, 'la llamada no existe');
+    res.status(204).end();
+  });
+
+  router.post('/:id/sala', async (req, res) => {
+    const id = z.string().uuid().safeParse(req.params.id);
+    const cuerpo = entrarASala.safeParse(req.body);
+    if (!id.success || !cuerpo.success) throw new ErrorHttp(400, 'datos no válidos');
+    const sala = id.data.toLowerCase();
+
+    const llamada = await llamadaDelDispositivo(pool, sala, cuerpo.data.deviceId);
+    if (llamada.estado !== 'en_curso') throw new ErrorHttp(409, 'la llamada ya terminó');
+    res.json(await tokenDeTelefono(sala, cuerpo.data.deviceId));
+  });
+
+  router.post('/:id/transcripcion', async (req, res) => {
+    const id = z.string().uuid().safeParse(req.params.id);
+    const cuerpo = lineasTranscripcion.safeParse(req.body);
+    if (!id.success || !cuerpo.success) throw new ErrorHttp(400, 'datos no válidos');
+    const sala = id.data.toLowerCase();
+
+    await llamadaDelDispositivo(pool, sala, cuerpo.data.deviceId);
+    const filas = cuerpo.data.lineas.map((l) => [sala, 'solicitante', l.texto, l.momentoSeg]);
+    await pool.query('INSERT INTO transcripcion (llamada_id, hablante, texto, momento_seg) VALUES ?', [filas]);
+    res.status(204).end();
+  });
+
+  router.put('/:id/ficha', async (req, res) => {
+    const id = z.string().uuid().safeParse(req.params.id);
+    const cuerpo = camposIa.safeParse(req.body);
+    if (!id.success || !cuerpo.success) throw new ErrorHttp(400, 'datos no válidos');
+    const sala = id.data.toLowerCase();
+    const c = cuerpo.data;
+
+    await llamadaDelDispositivo(pool, sala, c.deviceId);
+    const vacio = (valor) => (valor === undefined || valor === '' ? null : valor);
+    await pool.execute(
+      `UPDATE ficha
+          SET motivo           = COALESCE(?, motivo),
+              num_lesionados   = COALESCE(?, num_lesionados),
+              lesion_principal = COALESCE(?, lesion_principal),
+              lugar            = COALESCE(?, lugar),
+              comentarios      = COALESCE(?, comentarios)
+        WHERE llamada_id = ? AND editado_por IS NULL`,
+      [vacio(c.motivo), vacio(c.numLesionados), vacio(c.lesionPrincipal), vacio(c.lugar), vacio(c.comentarios), sala]
+    );
     res.status(204).end();
   });
 

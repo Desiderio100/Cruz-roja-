@@ -27,4 +27,5 @@ struct BotonesInicio: View {
         .padding()
         .environment(Ubicacion())
         .environment(Internet())
+        .environment(DirectorioDelegaciones())
 }

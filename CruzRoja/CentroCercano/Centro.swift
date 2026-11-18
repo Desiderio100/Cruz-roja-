@@ -1,10 +1,10 @@
-// La lista viene de centros.json, que va dentro de la app: funciona sin internet.
-// Para agregar o corregir un centro, edita ese archivo.
+// Los centros son las delegaciones de la base (tabla `delegacion`, GET /api/delegaciones), tal
+// como quedaron guardadas en el teléfono: funciona sin internet. Para agregar o corregir un
+// centro se cambia en la base; la app lo baja sola (ver DirectorioDelegaciones.swift).
 
 import CoreLocation
 import MapKit
 
-// Los nombres de las propiedades deben coincidir con las llaves de centros.json.
 struct Centro: Codable, Identifiable, Hashable {
     let id: String
     let nombre: String
@@ -44,17 +44,11 @@ struct Centro: Codable, Identifiable, Hashable {
 }
 
 extension Centro {
-    static let todos: [Centro] = {
-        struct Archivo: Decodable { let centros: [Centro] }
-        guard let url = Bundle.main.url(forResource: "centros", withExtension: "json"),
-              let datos = try? Data(contentsOf: url),
-              let archivo = try? JSONDecoder().decode(Archivo.self, from: datos)
-        else {
-            assertionFailure("No se pudo leer centros.json")
-            return []
-        }
-        return archivo.centros
-    }()
+    /// Todos los centros, del directorio guardado en el teléfono (o el que trae la app si nunca
+    /// hubo internet). En una vista usa mejor `DirectorioDelegaciones`, que avisa cuando cambia.
+    static var todos: [Centro] {
+        DirectorioDelegaciones.copiaGuardada().map(\.comoCentro)
+    }
 
     static func masCercano(a punto: CLLocationCoordinate2D, entre centros: [Centro] = todos) -> Centro? {
         centros.min { $0.distancia(desde: punto) < $1.distancia(desde: punto) }

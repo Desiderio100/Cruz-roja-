@@ -17,7 +17,8 @@ struct Producto: Identifiable, Decodable, Equatable {
     let precioMXN: Decimal
     let causa: String
     let imagenURL: URL?
-    /// Canal oficial de Cruz Roja. La compra ocurre allá, no en la app.
+    /// Enlace de compra que todavía manda la API (columna `enlace_compra`). Ya no se usa para comprar:
+    /// la compra ocurre dentro de la app (CompraView, con Stripe). Se conserva para no cambiar el contrato de la API.
     let enlaceCompra: URL
 
     enum CodingKeys: String, CodingKey {

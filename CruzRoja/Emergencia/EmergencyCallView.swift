@@ -1,4 +1,5 @@
 // Responsable del módulo de emergencia: Ayhan Ben Halima Martinez · A01647593
+import LiveKit
 import SwiftUI
 
 struct EmergencyCallView: View {
@@ -6,21 +7,25 @@ struct EmergencyCallView: View {
     let endCall: () -> Void
 
     @State private var elapsedSeconds = 0
-    @State private var isMuted = false
-    @State private var usesSpeaker = true
-    @State private var isVideoRequestPresented = false
-    @State private var hasPresentedVideoRequest = false
-    @State private var isVideoActive = false
-    @State private var camara = CamaraLlamada()
-    @State private var camaraNegada = false
+    @State private var llamada: LlamadaEnVivo
     @Environment(\.openURL) private var abrirURL
+
+    init(session: EmergencySession, endCall: @escaping () -> Void) {
+        self.session = session
+        self.endCall = endCall
+        _llamada = State(initialValue: LlamadaEnVivo(llamadaId: session.id))
+    }
+
+    private var isVideoActive: Bool { llamada.camaraActiva }
 
     var body: some View {
         ZStack {
             if isVideoActive {
                 // Lo que está captando la cámara, a pantalla completa.
-                VistaCamara(sesion: camara.sesion)
-                    .ignoresSafeArea()
+                if let pista = llamada.camaraLocal {
+                    SwiftUIVideoView(pista, layoutMode: .fill, mirrorMode: .off)
+                        .ignoresSafeArea()
+                }
                 // Oscurece arriba y abajo para que se lean el texto y los botones.
                 LinearGradient(
                     colors: [.black.opacity(0.65), .clear, .clear, .black.opacity(0.75)],
@@ -48,26 +53,29 @@ struct EmergencyCallView: View {
         }
         .preferredColorScheme(.dark)
         .task {
+            await llamada.iniciar()
+        }
+        .task {
             while !Task.isCancelled {
                 try? await Task.sleep(for: .seconds(1))
                 guard !Task.isCancelled else { return }
                 elapsedSeconds += 1
-
-                if elapsedSeconds == 3 && !hasPresentedVideoRequest {
-                    hasPresentedVideoRequest = true
-                    isVideoRequestPresented = true
-                }
             }
         }
-        .alert("El operador solicita ver tu cámara", isPresented: $isVideoRequestPresented) {
-            Button("Rechazar", role: .cancel) { }
+        .onChange(of: llamada.terminoElOperador) { _, termino in
+            if termino { endCall() }
+        }
+        .alert("El operador solicita ver tu cámara", isPresented: $llamada.solicitudDeCamara) {
+            Button("Rechazar", role: .cancel) {
+                Task { await llamada.rechazarCamara() }
+            }
             Button("Aceptar") {
-                Task { await encenderVideo() }
+                Task { await llamada.aceptarCamara() }
             }
         } message: {
             Text("El video es unidireccional: solo el operador podrá ver tu cámara.")
         }
-        .alert("No se puede usar la cámara", isPresented: $camaraNegada) {
+        .alert("No se puede usar la cámara", isPresented: $llamada.camaraNegada) {
             Button("Abrir Configuración") {
                 if let url = URL(string: UIApplication.openSettingsURLString) { abrirURL(url) }
             }
@@ -75,24 +83,19 @@ struct EmergencyCallView: View {
         } message: {
             Text("Permite el acceso a la cámara en Configuración para enviar video al operador.")
         }
-        .onDisappear { camara.apagar() }
-    }
-
-    @MainActor
-    private func encenderVideo() async {
-        guard await camara.encender() else {
-            camaraNegada = true
-            return
+        .onDisappear {
+            Task { await llamada.terminar() }
         }
-        withAnimation { isVideoActive = true }
-        try? await EmergencyAPI.shared.updateCall(id: session.id, videoAccepted: true)
     }
 
-    private func apagarVideo() {
-        camara.apagar()
-        withAnimation { isVideoActive = false }
-        Task {
-            try? await EmergencyAPI.shared.updateCall(id: session.id, videoAccepted: false)
+    private var estadoDeLaLlamada: String {
+        switch llamada.conexion {
+        case .conectando: "Conectando la llamada"
+        case .fallo: "No se pudo conectar el audio"
+        case .conectada:
+            if llamada.microfonoDenegado { "Sin acceso al micrófono" }
+            else if llamada.operadorPresente { "Operador en la llamada" }
+            else { "Esperando al operador" }
         }
     }
 
@@ -136,6 +139,9 @@ struct EmergencyCallView: View {
             Text(formattedDuration)
                 .font(.title3.monospacedDigit())
                 .foregroundStyle(.white.opacity(0.82))
+            Text(estadoDeLaLlamada)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.white.opacity(0.82))
 
             Label("GPS, nombre y número enviados", systemImage: "checkmark.shield.fill")
                 .font(.footnote.weight(.semibold))
@@ -164,13 +170,15 @@ struct EmergencyCallView: View {
             }
             Spacer()
             Button("Cambiar cámara", systemImage: "arrow.triangle.2.circlepath.camera.fill") {
-                camara.voltear()
+                Task { await llamada.cambiarCamara() }
             }
             .labelStyle(.iconOnly)
             .font(.title3)
             .foregroundStyle(.white)
             .frame(width: 44, height: 44)
-            Button("Detener", action: apagarVideo)
+            Button("Detener") {
+                Task { await llamada.apagarCamara() }
+            }
                 .font(.subheadline.bold())
                 .foregroundStyle(.white)
         }
@@ -181,27 +189,28 @@ struct EmergencyCallView: View {
     private var callControls: some View {
         HStack(alignment: .top) {
             CallControl(
-                title: isMuted ? "Activar audio" : "Silenciar",
-                icon: isMuted ? "mic.fill" : "mic.slash.fill",
-                isActive: isMuted
+                title: llamada.microfonoActivo ? "Silenciar" : "Activar audio",
+                icon: llamada.microfonoActivo ? "mic.slash.fill" : "mic.fill",
+                isActive: !llamada.microfonoActivo
             ) {
-                isMuted.toggle()
+                Task { await llamada.alternarMicrofono() }
             }
 
             Spacer()
 
             CallControl(
                 title: "Bocina",
-                icon: usesSpeaker ? "speaker.wave.3.fill" : "speaker.fill",
-                isActive: usesSpeaker
+                icon: llamada.usaBocina ? "speaker.wave.3.fill" : "speaker.fill",
+                isActive: llamada.usaBocina
             ) {
-                usesSpeaker.toggle()
+                llamada.alternarBocina()
             }
 
             Spacer()
 
             CallControl(title: "Colgar", icon: "phone.down.fill", color: .rojoCruzRoja) {
                 Task {
+                    await llamada.terminar()
                     try? await EmergencyAPI.shared.updateCall(
                         id: session.id,
                         status: "finalizada"

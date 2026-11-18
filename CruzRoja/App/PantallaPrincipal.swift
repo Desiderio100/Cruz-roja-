@@ -38,7 +38,8 @@ struct PantallaPrincipal: View {
             }
             .logoArriba()
             .toolbar {
-                ToolbarItem(placement: .primaryAction) {
+                ToolbarItemGroup(placement: .primaryAction) {
+                    BotonChat()
                     Button("Mi perfil", systemImage: "person.crop.circle") { viendoPerfil = true }
                         .labelStyle(.iconOnly)
                 }
@@ -81,4 +82,5 @@ private struct AccesoRapido: View {
         .environment(Ubicacion())
         .environment(CapacitacionModelo())
         .environment(Internet())
+        .environment(DirectorioDelegaciones())
 }

@@ -67,16 +67,25 @@ export function rutasRegistro(pool) {
       throw new ErrorHttp(429, 'Espera un minuto antes de pedir otro código');
     }
 
+    let fallaVerify = false;
     if (usaTwilioVerify()) {
-      await enviarConVerify(telefono);
-      // Twilio guarda el código; aquí solo se anota la hora para la espera de reenvío.
-      codigos.set(telefono, { codigo: null, expira: 0, enviado: ahora, intentos: 0 });
-      return res.json({ ok: true });
+      try {
+        await enviarConVerify(telefono);
+        // Twilio guarda el código; aquí solo se anota la hora para la espera de reenvío.
+        codigos.set(telefono, { codigo: null, expira: 0, enviado: ahora, intentos: 0 });
+        return res.json({ ok: true });
+      } catch (error) {
+        // Mismo respaldo de desarrollo que abajo (p. ej. un número que no es "verified tester"
+        // en la cuenta de prueba de Twilio): el código se genera aquí y sale en esta terminal.
+        if (!respaldoConsola()) throw error;
+        fallaVerify = true;
+      }
     }
 
     const codigo = String(randomInt(0, 1_000_000)).padStart(6, '0');
     const mensaje = `Tu código de Cruz Roja es ${codigo}`;
     try {
+      if (fallaVerify) throw new Error('Twilio Verify no mandó el código');
       await enviarSms(telefono, mensaje);
     } catch (error) {
       // Solo en desarrollo (SMS_RESPALDO_CONSOLA=si y sin NODE_ENV=production): si el SMS falla
@@ -100,10 +109,11 @@ export function rutasRegistro(pool) {
     const [filas] = await pool.execute('SELECT 1 FROM dispositivo WHERE id = ?', [dispositivo]);
     if (filas.length === 0) throw new ErrorHttp(400, 'dispositivo no registrado');
 
-    if (usaTwilioVerify()) {
+    const registro = codigos.get(telefono);
+    // Con Verify revisa Twilio, salvo que el código haya salido del respaldo de desarrollo.
+    if (usaTwilioVerify() && !registro?.codigo) {
       await revisarConVerify(telefono, codigo);
     } else {
-      const registro = codigos.get(telefono);
       if (!registro || Date.now() > registro.expira) throw new ErrorHttp(400, 'Código incorrecto o expirado');
       if (!iguales(registro.codigo, codigo)) {
         registro.intentos += 1;

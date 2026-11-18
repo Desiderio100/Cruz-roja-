@@ -54,7 +54,10 @@ struct ListaCursosView: View {
                 }
             }
 
-            Section("Próximos cursos") {
+            Section {
+                if capacitacion.cursos.isEmpty {
+                    estadoSinCursos
+                }
                 ForEach(capacitacion.cursos) { curso in
                     NavigationLink {
                         DetalleCursoView(cursoId: curso.id)
@@ -74,9 +77,41 @@ struct ListaCursosView: View {
                         .padding(.vertical, 4)
                     }
                 }
+            } header: {
+                Text("Próximos cursos")
+            } footer: {
+                if let fecha = capacitacion.actualizadoEn, !capacitacion.cursos.isEmpty {
+                    Text("Lugares actualizados \(fecha.formatted(.relative(presentation: .named).locale(Locale(identifier: "es_MX")))). Desliza hacia abajo para actualizar.")
+                }
             }
         }
         .listStyle(.plain)
+        .task { await capacitacion.cargar() }
+        .refreshable { await capacitacion.cargar() }
+    }
+
+    /// Lo que se ve mientras no hay cursos: cargando, error o lista vacía.
+    @ViewBuilder
+    private var estadoSinCursos: some View {
+        if capacitacion.cargando {
+            HStack(spacing: 10) {
+                ProgressView()
+                Text("Buscando cursos…").foregroundStyle(.secondary)
+            }
+            .padding(.vertical, 8)
+        } else if let error = capacitacion.errorCarga {
+            VStack(alignment: .leading, spacing: 8) {
+                Label(error, systemImage: "exclamationmark.triangle.fill")
+                    .foregroundStyle(.secondary)
+                Button("Reintentar") { Task { await capacitacion.cargar() } }
+                    .buttonStyle(BotonBorde())
+            }
+            .padding(.vertical, 8)
+        } else {
+            Text("Por ahora no hay cursos programados. Vuelve a revisar pronto.")
+                .foregroundStyle(.secondary)
+                .padding(.vertical, 8)
+        }
     }
 }
 
@@ -93,16 +128,17 @@ struct DetalleCursoView: View {
     @State private var celular = Perfil.telefono
     @State private var folioNuevo: String?
     @State private var error: String?
+    @State private var enviando = false
 
     var body: some View {
         if let curso = capacitacion.cursos.first(where: { $0.id == cursoId }) {
             Form {
                 Section {
-                    Text(curso.descripcion)
+                    if !curso.descripcion.isEmpty { Text(curso.descripcion) }
                     LabeledContent("Fecha", value: curso.textoFecha)
-                    LabeledContent("Duración", value: curso.duracion)
+                    if !curso.duracion.isEmpty { LabeledContent("Duración", value: curso.duracion) }
                     LabeledContent("Lugar", value: curso.sede)
-                    LabeledContent("Costo", value: curso.textoCosto)
+                    if curso.costo != nil { LabeledContent("Costo", value: curso.textoCosto) }
                     LabeledContent("Lugares", value: curso.textoLugares)
                 }
 
@@ -125,11 +161,19 @@ struct DetalleCursoView: View {
                             .textContentType(.telephoneNumber)
                     }
                     Section {
-                        Button("Inscribirme") { inscribir(curso) }
-                            .buttonStyle(BotonRojo())
-                            .disabled(!internet.hayConexion
-                                      || !CapacitacionModelo.datosValidos(nombre: nombre, celular: celular))
-                            .listRowInsets(EdgeInsets())
+                        Button {
+                            Task { await inscribir(curso) }
+                        } label: {
+                            if enviando {
+                                ProgressView().tint(.white)
+                            } else {
+                                Text("Inscribirme")
+                            }
+                        }
+                        .buttonStyle(BotonRojo())
+                        .disabled(enviando || !internet.hayConexion
+                                  || !CapacitacionModelo.datosValidos(nombre: nombre, celular: celular))
+                        .listRowInsets(EdgeInsets())
                     } footer: {
                         if !internet.hayConexion {
                             HStack(alignment: .firstTextBaseline) {
@@ -155,10 +199,12 @@ struct DetalleCursoView: View {
         }
     }
 
-    /// Intenta la inscripción y muestra el folio o el motivo del error.
-    private func inscribir(_ curso: Curso) {
+    /// Aparta el lugar en el servidor y muestra el folio o el motivo del error.
+    private func inscribir(_ curso: Curso) async {
+        enviando = true
+        defer { enviando = false }
         do {
-            folioNuevo = try capacitacion.inscribir(en: curso, nombre: nombre, celular: celular)
+            folioNuevo = try await capacitacion.inscribir(en: curso, nombre: nombre, celular: celular)
         } catch {
             self.error = error.localizedDescription
         }
@@ -167,6 +213,7 @@ struct DetalleCursoView: View {
 
 #Preview {
     NavigationStack { CapacitacionView() }
-        .environment(CapacitacionModelo())
+        .environment(CapacitacionModelo(almacen: UserDefaults(suiteName: "vista-previa")!,
+                                        fuente: CapacitacionDeEjemplo()))
         .environment(Internet())
 }

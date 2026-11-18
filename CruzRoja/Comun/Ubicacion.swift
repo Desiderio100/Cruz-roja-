@@ -73,6 +73,7 @@ final class Ubicacion: NSObject, CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard !simulando, let ultima = locations.last, ultima.horizontalAccuracy >= 0 else { return }
         coordenada = ultima.coordinate
+        UltimaUbicacion.guardar(ultima.coordinate)
         // Más de ~10 km/h: vas en carro → el rumbo sale del GPS.
         enMovimiento = ultima.speed > 3 && ultima.course >= 0
         if enMovimiento { rumbo = ultima.course }

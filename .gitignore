@@ -28,6 +28,7 @@ _respaldo_version_compleja/
 # (.env termina en ".env", ya lo cubre la regla "*.env" de arriba; estas reglas cubren el resto)
 .env.*
 !.env.example
+!.env.local.example
 *.pem
 node_modules/
 *.log

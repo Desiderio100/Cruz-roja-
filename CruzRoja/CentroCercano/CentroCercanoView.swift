@@ -1,6 +1,8 @@
-// Centro más cercano (HU11). La llamada se hace desde el Botón de emergencia de la
-// pantalla principal, que usa `Centro.masCercano` para saber a qué centro marcar
-// cuando no hay internet.
+// Centro más cercano (HU11 · Delegación según mi ubicación).
+//   • Arriba, "Tu delegación": a quién llamar según tu zona (DirectorioDelegaciones, datos de la base).
+//   • Después, el centro más cercano para llegar en persona, con el mapa y la lista de todos.
+// Todo sale del mismo directorio de delegaciones de la base, guardado en el teléfono.
+// El botón de Emergencia de la pantalla principal usa la misma delegación para el respaldo telefónico.
 
 import SwiftUI
 import MapKit
@@ -10,14 +12,20 @@ import MapKit
 struct CentroCercanoView: View {
     @Environment(Ubicacion.self) private var ubicacion
     @Environment(Internet.self) private var internet
+    @Environment(DirectorioDelegaciones.self) private var directorio
     @State private var camara: MapCameraPosition = .region(.monterrey)
     @State private var prueba = false
+    /// Delegación cuya ciudad se está simulando (prueba de cambio de zona), o `nil`.
+    @State private var ciudadSimulada: Int?
     /// Último centro que te tocó, por si abres la app sin señal de GPS.
     @AppStorage("ultimoCentroCercano") private var ultimoCentroId = ""
 
+    /// Los centros del directorio de la base (guardado en el teléfono; funciona sin internet).
+    private var centros: [Centro] { directorio.delegaciones.map(\.comoCentro) }
+
     private var cercano: Centro? {
-        if let punto = ubicacion.coordenada { return Centro.masCercano(a: punto) }
-        return Centro.todos.first { $0.id == ultimoCentroId }
+        if let punto = ubicacion.coordenada { return Centro.masCercano(a: punto, entre: centros) }
+        return centros.first { $0.id == ultimoCentroId }
     }
 
     var body: some View {
@@ -29,6 +37,7 @@ struct CentroCercanoView: View {
                 VStack(alignment: .leading, spacing: 16) {
                     if !internet.hayConexion { AvisoSinInternet("la lista de centros sigue funcionando") }
                     AvisoPermisoUbicacion(motivo: "para mostrarte el centro de Cruz Roja más cercano")
+                    TarjetaDelegacion()
                     TarjetaCentroCercano(centro: cercano, metros: distancia(a: cercano))
                     listaCentros
                     seccionPrueba
@@ -50,7 +59,7 @@ struct CentroCercanoView: View {
 
     private var mapa: some View {
         Map(position: $camara) {
-            ForEach(Centro.todos) { centro in
+            ForEach(centros) { centro in
                 Marker(centro.nombre, systemImage: "cross.fill", coordinate: centro.coordenada)
                     .tint(centro == cercano ? Color.rojoCruzRoja : .gray)
             }
@@ -103,9 +112,9 @@ struct CentroCercanoView: View {
 
     private var filas: [(centro: Centro, metros: CLLocationDistance?)] {
         if let punto = ubicacion.coordenada {
-            return Centro.ordenados(desde: punto).map { (centro: $0.centro, metros: Optional($0.metros)) }
+            return Centro.ordenados(desde: punto, entre: centros).map { (centro: $0.centro, metros: Optional($0.metros)) }
         }
-        return Centro.todos.map { (centro: $0, metros: nil as CLLocationDistance?) }
+        return centros.map { (centro: $0, metros: nil as CLLocationDistance?) }
     }
 
     private var listaCentros: some View {
@@ -155,19 +164,54 @@ struct CentroCercanoView: View {
             Text("Para presentar: tu ubicación se mueve sola por Monterrey, como en carro.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
+
+            Divider().padding(.vertical, 4)
+
+            Menu {
+                ForEach(directorio.delegaciones) { delegacion in
+                    Button(delegacion.estado) { simularCiudad(de: delegacion) }
+                }
+                if ciudadSimulada != nil {
+                    Divider()
+                    Button("Usar mi ubicación real") {
+                        ciudadSimulada = nil
+                        ubicacion.detenerSimulacion()
+                    }
+                }
+            } label: {
+                Label("Simular que estás en otra ciudad", systemImage: "airplane")
+                    .font(.subheadline.bold())
+            }
+            Text("Para probar que tu delegación cambia sola al moverte de zona.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
         }
         .tarjeta()
+    }
+
+    /// Pone tu ubicación cerca de una delegación, como si hubieras viajado a esa ciudad.
+    private func simularCiudad(de delegacion: Delegacion) {
+        ciudadSimulada = delegacion.id
+        prueba = false
+        ubicacion.simular(CLLocationCoordinate2D(latitude: delegacion.latitud + 0.01,
+                                                 longitude: delegacion.longitud - 0.01))
+        withAnimation {
+            camara = .region(MKCoordinateRegion(center: delegacion.coordenada,
+                                                latitudinalMeters: 20_000, longitudinalMeters: 20_000))
+        }
     }
 
     /// Modo presentación: mueve la ubicación simulada de un centro a otro cada 1.5 s.
     private func correrPrueba() async {
         guard prueba else {
-            ubicacion.detenerSimulacion()
+            if ciudadSimulada == nil { ubicacion.detenerSimulacion() }
             return
         }
-        let paradas = Centro.todos.map {
-            CLLocationCoordinate2D(latitude: $0.latitud + 0.006, longitude: $0.longitud - 0.004)
-        }
+        ciudadSimulada = nil
+        // Solo los centros de la zona metropolitana (a menos de 60 km del centro de Monterrey).
+        let paradas = centros
+            .filter { $0.distancia(desde: MKCoordinateRegion.monterrey.center) < 60_000 }
+            .map { CLLocationCoordinate2D(latitude: $0.latitud + 0.006, longitude: $0.longitud - 0.004) }
         guard paradas.count > 1 else { return }
         let pasosPorTramo = 8
         var i = 0
@@ -328,4 +372,5 @@ extension MKCoordinateRegion {
     }
     .environment(Ubicacion())
     .environment(Internet())
+    .environment(DirectorioDelegaciones())
 }

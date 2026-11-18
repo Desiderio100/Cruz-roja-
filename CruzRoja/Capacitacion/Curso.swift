@@ -1,16 +1,16 @@
 import Foundation
 
-/// Un curso de capacitación con su fecha, sede y cupo.
-struct Curso: Identifiable, Hashable {
+/// Un curso de capacitación con su fecha, sede y cupo (tabla `curso` de la base, GET /api/cursos).
+struct Curso: Codable, Identifiable, Hashable {
     let id: String
     let titulo: String
     let descripcion: String
     let fecha: Date
-    let duracion: String
+    let duracion: String     // "" = sin dato
     let sede: String
     let cupo: Int
     var inscritos: Int
-    let costo: Int?          // nil = gratuito
+    let costo: Int?          // nil = sin dato, 0 = gratuito
 
     /// Lugares que quedan; nunca es negativo.
     var lugaresDisponibles: Int { max(0, cupo - inscritos) }
@@ -25,14 +25,21 @@ struct Curso: Identifiable, Hashable {
         }
     }
 
-    /// "$350 MXN" o "Gratuito".
-    var textoCosto: String { (costo ?? 0) > 0 ? "$\(costo!) MXN" : "Gratuito" }
+    /// "$350 MXN", "Gratuito" o "Por confirmar".
+    var textoCosto: String {
+        guard let costo else { return "Por confirmar" }
+        return costo > 0 ? "$\(costo) MXN" : "Gratuito"
+    }
+
+    /// "4 horas" o "Por confirmar".
+    var textoDuracion: String { duracion.isEmpty ? "Por confirmar" : duracion }
 
     var textoFecha: String { fecha.textoCurso }
 }
 
 extension Curso {
-    /// Cursos de prueba (fechas relativas a hoy para que siempre se vean "próximos").
+    /// Cursos para las vistas previas de Xcode y las pruebas (fechas relativas a hoy
+    /// para que siempre se vean "próximos"). La app muestra los del servidor.
     static let ejemplos: [Curso] = [
         Curso(id: "primeros-auxilios", titulo: "Primeros auxilios básicos",
               descripcion: "Valorar a una persona lesionada, controlar hemorragias, atender quemaduras y actuar mientras llega la ambulancia.",
@@ -49,7 +56,7 @@ extension Curso {
         Curso(id: "prevencion-hogar", titulo: "Prevención de accidentes en el hogar",
               descripcion: "Identificar riesgos en casa y armar un botiquín básico.",
               fecha: .enDias(12, hora: 18), duracion: "1 hora 30 min",
-              sede: "Cruz Roja Guadalupe", cupo: 40, inscritos: 15, costo: nil),
+              sede: "Cruz Roja Guadalupe", cupo: 40, inscritos: 15, costo: 0),
     ]
 }
 

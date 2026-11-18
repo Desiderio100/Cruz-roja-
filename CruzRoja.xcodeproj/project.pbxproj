@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		CC3D948330ABA10C00B97875 /* StripePaymentSheet in Frameworks */ = {isa = PBXBuildFile; productRef = CC3D948230ABA10C00B97875 /* StripePaymentSheet */; };
+		CC3D94A130ABA10C00B97875 /* LiveKit in Frameworks */ = {isa = PBXBuildFile; productRef = CC3D94A230ABA10C00B97875 /* LiveKit */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		C2A0E1000000000000000022 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -41,6 +46,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CC3D948330ABA10C00B97875 /* StripePaymentSheet in Frameworks */,
+				CC3D94A130ABA10C00B97875 /* LiveKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -61,6 +68,7 @@
 				C2A0E100000000000000001B /* CruzRojaTests */,
 				C2A0E1000000000000000019 /* CruzRoja-Info.plist */,
 				C2A0E100000000000000000C /* Simulacion */,
+				CC3D948130ABA10C00B97875 /* Frameworks */,
 				C2A0E100000000000000000D /* Products */,
 			);
 			sourceTree = "<group>";
@@ -82,6 +90,13 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		CC3D948130ABA10C00B97875 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -101,6 +116,10 @@
 				C2A0E1000000000000000009 /* CruzRoja */,
 			);
 			name = CruzRoja;
+			packageProductDependencies = (
+				CC3D948230ABA10C00B97875 /* StripePaymentSheet */,
+				CC3D94A230ABA10C00B97875 /* LiveKit */,
+			);
 			productName = CruzRoja;
 			productReference = C2A0E1000000000000000007 /* CruzRoja.app */;
 			productType = "com.apple.product-type.application";
@@ -154,6 +173,10 @@
 			);
 			mainGroup = C2A0E100000000000000000B;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				CC3D948030AB9E8E00B97875 /* XCRemoteSwiftPackageReference "stripe-ios-spm" */,
+				CC3D94A030ABA10C00B97875 /* XCRemoteSwiftPackageReference "client-sdk-swift" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = C2A0E100000000000000000D /* Products */;
 			projectDirPath = "";
@@ -340,6 +363,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = GR3BJD7CT8;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "CruzRoja-Info.plist";
@@ -372,6 +396,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = GR3BJD7CT8;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "CruzRoja-Info.plist";
@@ -464,6 +489,38 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		CC3D948030AB9E8E00B97875 /* XCRemoteSwiftPackageReference "stripe-ios-spm" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/stripe/stripe-ios-spm";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 26.16.1;
+			};
+		};
+		CC3D94A030ABA10C00B97875 /* XCRemoteSwiftPackageReference "client-sdk-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/livekit/client-sdk-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.19.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		CC3D948230ABA10C00B97875 /* StripePaymentSheet */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = CC3D948030AB9E8E00B97875 /* XCRemoteSwiftPackageReference "stripe-ios-spm" */;
+			productName = StripePaymentSheet;
+		};
+		CC3D94A230ABA10C00B97875 /* LiveKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = CC3D94A030ABA10C00B97875 /* XCRemoteSwiftPackageReference "client-sdk-swift" */;
+			productName = LiveKit;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = C2A0E1000000000000000012 /* Project object */;
 }

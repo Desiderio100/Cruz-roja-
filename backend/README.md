@@ -5,6 +5,9 @@ API única: una carpeta de rutas por pantalla (`src/rutas/`). La app de iPhone n
 | Ruta | Pantalla | Archivo |
 |---|---|---|
 | `GET /api/productos` | Productos con causa | `src/rutas/productos.js` |
+| `GET /api/pedidos/condiciones`, `POST /api/pedidos`, `GET /api/pedidos/:id`, `POST /api/pedidos/:id/cancelar` | Compra con pago (Stripe) | `src/rutas/pedidos.js`, `src/stripe.js` |
+| `POST /stripe/webhook` | Avisos de Stripe: pago exitoso, pago cancelado y reembolso (lo llama Stripe, no la app) | `src/rutas/stripeWebhook.js` |
+| `/admin/` (página) y `/admin/api/…` | Sitio de administración de pedidos para el personal (sesión por persona) | `publico/admin/`, `src/admin/` |
 | `GET/POST /api/citas…` | Agenda de citas | `src/rutas/citas.js` |
 | `POST /api/dispositivos` | Registro del dispositivo | `src/rutas/dispositivos.js` |
 | `POST/PATCH /api/llamadas…` | Emergencia y llamada | `src/rutas/llamadas.js` |
@@ -46,11 +49,73 @@ Reglas: el código vence en 5 minutos, se puede pedir otro cada 60 s, 5 intentos
 invalidan y cada código sirve una sola vez. El código **nunca** se devuelve en la respuesta.
 Los códigos viven en memoria: si reinicias el servidor, pide otro.
 
+### Twilio Verify (configuración del equipo)
+
+`.env.example` ya trae el servicio de Twilio Verify que probó Luis Roberto Tonchez: `SMS_MODO=twilio`,
+`TWILIO_ACCOUNT_SID` y `TWILIO_VERIFY_SID`. Con Verify, Twilio genera, manda y revisa el código; no hace
+falta comprar número (`TWILIO_FROM` se queda vacío). Con `SMS_RESPALDO_CONSOLA=si`, si Twilio no
+puede mandar (p. ej. un celular que no es *verified tester* en la cuenta de prueba), el backend genera
+el código, lo imprime en la terminal y lo revisa él mismo.
+
+1. En tu `.env` copia de `.env.example` los valores de `SMS_MODO`, `SMS_RESPALDO_CONSOLA`, `SMS_PAIS`,
+   `TWILIO_ACCOUNT_SID` y `TWILIO_VERIFY_SID`. Conserva tu conexión a MySQL.
+2. Escribe `TWILIO_AUTH_TOKEN` (el token privado de esa misma cuenta). Pídelo a quien administra el
+   backend o configúrenlo juntos desde la consola de Twilio. **Nunca** en Git ni en un chat.
+3. Reinicia `npm run dev`.
+
+Sin `TWILIO_AUTH_TOKEN` el registro responde "No se pudo enviar el SMS". Para desarrollar sin Twilio,
+pon `SMS_MODO=consola`. Si usas otra cuenta de Twilio, pon su propio Account SID, Auth Token y Verify
+Service SID.
+
+La cuenta es de prueba (trial): solo manda a los celulares autorizados en esa cuenta y depende de su
+vigencia. Probado: `src/sms.js` mandó un SMS real a un celular autorizado del equipo y Twilio aprobó el
+código. Falta probar desde la app: en Registro pide un código para un celular autorizado, escribe el SMS
+recibido y revisa que la app avance; confirma en MySQL que `dispositivo.telefono` tiene ese número;
+después prueba un código incorrecto y el reenvío (respeta la espera de 60 s).
+
+## Pagos con Stripe (Productos con causa)
+
+Guía completa, paso a paso: [`../PAGOS_STRIPE.md`](../PAGOS_STRIPE.md). Resumen:
+
+| Variable (`.env`) | Qué es |
+|---|---|
+| `STRIPE_SECRET_KEY` | Llave secreta (`sk_test_...`). **Solo aquí**, nunca en la app ni en Git. Si está vacía, los pagos quedan apagados y lo demás sigue igual. |
+| `STRIPE_PUBLISHABLE_KEY` | Llave publicable (`pk_test_...`). El servidor se la manda a la app con cada pedido. Debe ser del mismo modo que la secreta. |
+| `STRIPE_WEBHOOK_SECRET` | `whsec_...`. En desarrollo lo imprime `stripe listen --forward-to localhost:3000/stripe/webhook`. Sin él, ningún pedido pasa a «pagado». |
+| `ENVIO_MXN` | Costo fijo del envío a domicilio, en pesos (por defecto 99; provisional). |
+
+Reglas del servidor: el **precio sale de la tabla `producto`**, nunca de lo que mande la app; el pedido pasa a `pagado` **solo** cuando llega un aviso de Stripe con firma válida y con el mismo monto y moneda; un aviso repetido se ignora (tabla `evento_stripe`); `GET /api/pedidos/:id` solo lo ve el dispositivo que lo creó y no trae datos personales. Las tablas están en `../db/08_pedidos.sql` (corre después `03_permisos_app.sql` otra vez) y `../db/09_pedidos_admin.sql` (estado de envío y reembolso).
+
+## Sitio de administración de pedidos
+
+Para el personal de Cruz Roja: ver y filtrar pedidos, marcar el envío (por preparar → preparando → enviado → entregado) y reembolsar por Stripe. Guía completa: [`../PAGOS_STRIPE.md`](../PAGOS_STRIPE.md) (paso 8 y sección 3). Resumen:
+
+| Variable (`.env`) | Qué es |
+|---|---|
+| `ADMIN_SESION_SECRETO` | Secreto con el que se firman las sesiones, **mínimo 32 caracteres** (genera uno con `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"`). **Solo aquí**, nunca en Git. Si está vacío, el sitio queda apagado y lo demás sigue igual. |
+
+- **Abrirlo:** `http://localhost:3000/admin/`.
+- **Cuentas:** `npm run crear:personal` pregunta usuario, rol (`operador` o `administrativo`), delegación y contraseña, e imprime un `INSERT INTO personal …` que corres en Workbench. La contraseña no se guarda: solo su hash bcrypt. Para dar de baja: `UPDATE personal SET activo = 0 WHERE usuario = '…';` (pierde el acceso en el momento).
+- **Roles:** `operador` ve pedidos y marca envíos; `administrativo` además reembolsa (solo reembolso total).
+- **Seguridad:** sesión de 8 horas en cookie firmada `HttpOnly` y `SameSite=Strict` (`Secure` con `NODE_ENV=production`, por eso en producción necesita HTTPS); bloqueo de 15 minutos tras 5 contraseñas malas; los cambios exigen que la petición venga del mismo sitio; ver el detalle de un pedido (domicilio) y cada cambio quedan en `bitacora` con el nombre de quien los hizo.
+- **Webhook:** además de `payment_intent.succeeded` y `payment_intent.canceled`, registra `charge.refunded` en el Dashboard de Stripe para que los reembolsos hechos allá también se reflejen (`stripe listen` ya reenvía todos).
+
+## Panel del personal (llamadas y citas)
+
+Es otro sitio aparte, en `../personal` (tiene su propio `npm run dev`, puerto 4000). Este backend no lo sirve ni comparte su sesión. Dos cosas de aquí lo tocan:
+
+- `PANEL_PERSONAL_URL` en `.env` (opcional): muestra el enlace «Llamadas y citas» en la barra de `/admin/`. Solo acepta `http://` o `https://`.
+- Las cuentas que solo tienen matrícula (sin contraseña) no entran a `/admin/`: reciben el mismo «Usuario o contraseña incorrectos» y no se les cuenta como intento fallido.
+
 ## Comandos
 
 - `npm run dev` — servidor con tu `.env` y reinicio automático al guardar.
 - `npm start` — servidor sin `.env` (producción: las variables las pone la plataforma).
 - `npm run probar` — prueba rápida de solo lectura (`npm run probar -- http://192.168.1.20:3000` para otra dirección).
+- `npm run probar:pagos` — 17 pruebas de los pagos contra un MySQL **local** y un Stripe falso (no llaman a internet). Necesita `.env.local` (copia `.env.local.example`); se niega a correr contra Aiven porque crea y borra datos.
+- `npm run probar:admin` — 34 pruebas del sitio de administración (sesión, roles, filtros, envío, reembolsos, webhook de reembolso). Mismas condiciones que la anterior; deja unas filas en `bitacora` y `personal` (cuentas `prueba.*.pagos`) porque la bitácora no se puede borrar.
+- `npm run probar:todo` — las 51 pruebas juntas (antes corre `db/10_modo_personal.sql` en tu MySQL local).
+- `npm run crear:personal` — da de alta a una persona del personal (imprime el `INSERT` para Workbench).
 
 ## Agregar la ruta de tu pantalla
 

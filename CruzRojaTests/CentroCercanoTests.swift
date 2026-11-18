@@ -2,8 +2,8 @@
 //  CentroCercanoTests.swift
 //  Pruebas unitarias de HU11 · Delegación según mi ubicación (Centro más cercano).
 //
-//  Usan centros con coordenadas fijas para no depender de centros.json,
-//  salvo la prueba que revisa que ese directorio se pueda leer.
+//  Usan centros con coordenadas fijas para no depender del directorio de la base,
+//  salvo la prueba que revisa que el directorio guardado se pueda leer.
 //
 
 import CoreLocation

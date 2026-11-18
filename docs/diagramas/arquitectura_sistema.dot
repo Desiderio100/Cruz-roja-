@@ -1,0 +1,39 @@
+digraph sistema {
+  graph [rankdir=LR, fontname="Helvetica", fontsize=18, labelloc=t, label="App Cruz Roja · arquitectura del sistema y stack", bgcolor=white, pad=0.3, nodesep=0.45, ranksep=1.2];
+  node  [shape=box, style="rounded,filled", fillcolor="#F4F4F4", color="#888888", fontname="Helvetica", fontsize=11, margin="0.16,0.1"];
+  edge  [color="#555555", fontname="Helvetica", fontsize=10, arrowsize=0.8];
+
+  subgraph cluster_cliente {
+    label="Dispositivos"; fontname="Helvetica-Bold"; fontsize=13; color="#B0241A"; style=rounded;
+    iphone [label="iPhone del usuario\nApp Cruz Roja\nSwift 5 · SwiftUI · iOS 17+\nMapKit, Core Location, AVFoundation, Speech\n(transcripción en el teléfono), Network,\nSecurity (Llavero), UserNotifications,\nStripe PaymentSheet", fillcolor="#FBE9E7"];
+    navegador [label="Navegador del personal\n(operador y administrativo)\nHTML, CSS y JavaScript", fillcolor="#FBE9E7"];
+  }
+
+  subgraph cluster_nube {
+    label="Servidores Node.js (en desarrollo: la Mac; al desplegar: servicio en la nube)"; fontname="Helvetica-Bold"; fontsize=13; color="#1F5F8B"; style=rounded;
+    api [label="API · carpeta backend/\nNode.js 20.6+ · Express 5\nhelmet, express-rate-limit, zod,\nmysql2, stripe, bcryptjs\nTambién sirve el sitio /admin", fillcolor="#E3F2FD"];
+    panel [label="Panel del personal · carpeta personal/\nNode.js 20.6+ · Express 5\ncookie-session, helmet, mysql2", fillcolor="#E3F2FD"];
+  }
+
+  subgraph cluster_datos {
+    label="Base de datos"; fontname="Helvetica-Bold"; fontsize=13; color="#2E7D32"; style=rounded;
+    mysql [label="MySQL 8 (Aiven, MySQL 8.4)\nbase cruzroja\nUsuario de la app con permisos mínimos\n(cruzroja_app)", shape=cylinder, fillcolor="#E8F5E9"];
+  }
+
+  subgraph cluster_terceros {
+    label="Servicios de terceros"; fontname="Helvetica-Bold"; fontsize=13; color="#8E5A00"; style=rounded;
+    stripe [label="Stripe\n(modo de prueba)", fillcolor="#FFF3E0"];
+    twilio [label="Twilio\n(SMS)", fillcolor="#FFF3E0"];
+  }
+
+
+  iphone -> api [label="HTTPS · JSON"];
+  navegador -> api [label="HTTPS · /admin"];
+  navegador -> panel [label="HTTPS"];
+  api -> mysql [label="TLS con certificado (ca.pem)"];
+  panel -> mysql [label="TLS"];
+  iphone -> stripe [label="datos de tarjeta\n(nunca pasan por la API)"];
+  api -> stripe [label="crear cobro, reembolsar"];
+  stripe -> api [label="webhook con firma", style=dashed];
+  api -> twilio [label="código de verificación"];
+}

@@ -3,8 +3,8 @@
 //  EmergenciaInicio.swift
 //  Botón de EMERGENCIA de la pantalla principal + lo que abre (Ayhan):
 //    • con servidor: la llamada (EmergencyCallView), con la delegación más cercana que elige el backend;
-//    • sin internet o si el servidor falla: el respaldo (RespaldoSinInternetView), con el centro más
-//      cercano de centros.json y tus coordenadas, para llamar por línea telefónica.
+//    • sin internet o si el servidor falla: el respaldo (RespaldoSinInternetView), con tu delegación
+//      (HU11, directorio guardado en el teléfono) y tus coordenadas, para llamar por línea telefónica.
 //  La llamada nunca se queda en un error.
 //
 
@@ -14,6 +14,7 @@ import SwiftUI
 struct EmergenciaInicio: View {
     @Environment(Ubicacion.self) private var ubicacion
     @Environment(Internet.self) private var internet
+    @Environment(DirectorioDelegaciones.self) private var directorio
     /// Último centro cercano que vio la persona (lo guarda Centro más cercano).
     @AppStorage("ultimoCentroCercano") private var ultimoCentroId = ""
 
@@ -22,10 +23,8 @@ struct EmergenciaInicio: View {
 
     var body: some View {
         VStack(spacing: 12) {
-            // TEMPORAL: mientras el servidor no tenga delegaciones, siempre abre la llamada.
-            // Cuando las tenga, vuelve a usar: Task { await iniciarLlamada() }
             EmergenciaBoton(estaConectando: conectando) {
-                abierta = .llamada(Self.sesionTemporal)
+                Task { await iniciarLlamada() }
             }
 
             // TEMPORAL: para probar el respaldo telefónico. Se quitará después.
@@ -35,6 +34,13 @@ struct EmergenciaInicio: View {
                 Label("Llamada sin internet", systemImage: "phone.fill")
             }
             .buttonStyle(BotonBorde())
+        }
+        .task {
+            #if canImport(FoundationModels)
+            if #available(iOS 26.0, *), internet.hayConexion {
+                await TranscripcionLlamada.prepararModelo()
+            }
+            #endif
         }
         .fullScreenCover(item: $abierta) { pantalla in
             switch pantalla {
@@ -83,14 +89,11 @@ struct EmergenciaInicio: View {
         }
     }
 
-    /// TEMPORAL: llamada de muestra mientras el servidor no tenga delegaciones.
-    private static let sesionTemporal = EmergencySession(
-        id: UUID(),
-        status: "en_curso",
-        delegation: Delegation(id: 0, name: "Delegación más cercana", phone: Telefono.emergencias)
-    )
-
     private func respaldo(_ punto: CLLocationCoordinate2D?) -> PantallaEmergencia {
+        // HU11: el número de la delegación de tu zona (sin GPS, la última que te tocó).
+        if let delegacion = punto.flatMap({ directorio.masCercana(a: $0) }) ?? directorio.actual {
+            return .respaldo(delegacion.comoCentro, punto)
+        }
         let centro = punto.flatMap { Centro.masCercano(a: $0) }
             ?? Centro.todos.first { $0.id == ultimoCentroId }
         return .respaldo(centro, punto)
@@ -125,4 +128,5 @@ enum PantallaEmergencia: Identifiable {
         .padding()
         .environment(Ubicacion())
         .environment(Internet())
+        .environment(DirectorioDelegaciones())
 }

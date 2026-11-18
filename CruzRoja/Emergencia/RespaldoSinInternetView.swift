@@ -2,12 +2,12 @@
 //
 //  RespaldoSinInternetView.swift
 //  Respaldo de EMERGENCIA cuando no hay internet o el servidor no responde (maqueta
-//  "Respaldo sin internet"): el centro más cercano sale de centros.json, que va dentro de
-//  la app, y las coordenadas del GPS, que funciona sin internet. La persona llama por
+//  "Respaldo sin internet"): la delegación de tu zona sale del directorio guardado en el
+//  teléfono (HU11) y las coordenadas del GPS, que funciona sin internet. La persona llama por
 //  línea telefónica y le dicta sus coordenadas al operador.
 //
 //  ⚠️ Mientras Configuracion.directorioDePrueba sea true, el botón NO marca: los
-//  teléfonos de centros.json son inventados.
+//  teléfonos del directorio de prueba son inventados.
 //
 
 import CoreLocation
@@ -63,7 +63,7 @@ struct RespaldoSinInternetView: View {
             .alert("Directorio de prueba", isPresented: $avisoPrueba) {
                 Button("Entendido", role: .cancel) { }
             } message: {
-                Text("Este número es inventado y no se marca. Cuando centros.json tenga el directorio oficial, cambia Configuracion.directorioDePrueba a false.")
+                Text("Este número es inventado y no se marca. Cuando la base tenga el directorio oficial, cambia Configuracion.directorioDePrueba a false.")
             }
         }
     }
